@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-    <link rel="icon" type="image/png" href="/images/icons-48.png"/>
-    <link rel="manifest" href="manifest.webmanifest">
-    <script async src="/js/pwacompat.min.js"></script>
-    <title> Guzi Payment </title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.css"
-      rel="stylesheet"
-    />
-    <script src="./script.js"></script>
-  </head>
-  <body>
-    <h1 class="title">Github Client</h1>
-    <div class="container"></div>
-  </body>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <link rel="icon" type="image/png" href="/images/icons-48.png"/>
+        <link rel="manifest" href="manifest.webmanifest">
+        <script async src="/js/pwacompat.min.js"></script>
+        <title> Guzi Payment </title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.css"
+            rel="stylesheet"
+            />
+        <script src="./script.js"></script>
+    </head>
+    <body>
+        <h1 class="title">Github Client</h1>
+        <div class="container"></div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('js/sw.js')
+                .then(reg => {
+                    console.log('votre service worker a été enregistré !');
+                }).catch(error => {
+                    console.error(error);
+                });
+        } else {
+            console.log('Ce navigateur ne suporte pas cette API');
+        }
+
+    </script>
+    </body>
 </html>
