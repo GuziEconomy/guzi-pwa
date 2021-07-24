@@ -3,24 +3,36 @@ const filesToCache = [
     '/',
     '/index.html',
     '/script.js',
-    '/images/logo.png',
+    '/images/logo.png'
 ]
 
-self.addEventListener('install', e => {
-    e.waitUntil(
-        caches.open(cacheName)
-        .then(cache => {
-            return cache.addAll(filesToCache);
-        })
-    );
-})
+self.addEventListener("install", e => {
+  caches.open(cacheName).then(cache => {
+    cache.addAll(files);
+  });
+});
 
-self.addEventListener("fetch", e => {
-    e.respondWith(
-        caches.open(cacheName)
-        .then(cache => cach.match(e.request))
-        .then(response => {
-            return response || fetch(e.request);
+self.addEventListener("activate", e => {
+  e.waitUntil(
+    caches.keys().then(function(keyList) {
+      return Promise.all(
+        keyList.map(function(key) {
+          if (key !== cacheName) {
+            return caches.delete(key);
+          }
         })
+      );
+    })
+  );
+});
+
+self.addEventListener("fetch", e => {});
+
+self.addEventListener("fetch", event => {
+    event.respondWith(
+      caches
+        .open(cacheName)
+        .then(cache => cache.match(event.request))
+        .then(response => response || fetch(event.request))
     );
 });
