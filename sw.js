@@ -4,6 +4,7 @@ const filesToCache = [
     '/index.html',
     '/js/guzi.js',
     '/js/pwacompat.min.js',
+    '/js/localforage.min.js',
     '/images/logo.png'
 ]
 
