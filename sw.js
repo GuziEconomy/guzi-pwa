@@ -1,8 +1,9 @@
-const cacheName = 'guzi-cache-v1';
+const cacheName = 'guzi-cache-v2';
 const filesToCache = [
     '/',
     '/index.html',
-    '/script.js',
+    '/js/guzi.js',
+    '/js/pwacompat.min.js',
     '/images/logo.png'
 ]
 
