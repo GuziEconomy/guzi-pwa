@@ -2,6 +2,8 @@ const cacheName = 'guzi-cache-v2';
 const filesToCache = [
     '/',
     '/index.html',
+    '/css/bootstrap.min.css',
+    '/js/bootstrap.bundle.min.css',
     '/js/guzi.js',
     '/js/pwacompat.min.js',
     '/js/localforage.min.js',
