@@ -30,18 +30,72 @@
     </head>
     <body>
         <h1 class="title">Github Client</h1>
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <ul class="nav nav-tabs fixed-bottom justify-content-center" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false"> Payment</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="inscription-tab" data-bs-toggle="tab" data-bs-target="#inscription" type="button" role="tab" aria-controls="inscription" aria-selected="true"> Inscription</button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="contacts-tab" data-bs-toggle="tab" data-bs-target="#contacts" type="button" role="tab" aria-controls="contacts" aria-selected="true"> Contacts</button>
+            </li>
         </ul>
         <div class="tab-content" id="myTabContent">
-            <div class="tab-pane show active" id="inscription" role="tabpanel" aria-labelledby="inscription-tab"> Inscription</div>
-            <div class="tab-pane" id="payment" role="tabpanel" aria-labelledby="payment-tab"> Payment</div>
+            <div class="tab-pane show active" id="payment" role="tabpanel" aria-labelledby="payment-tab"> Payment</div>
+            <div class="tab-pane" id="inscription" role="tabpanel" aria-labelledby="inscription-tab"> Inscription</div>
+            <div class="tab-pane" id="contacts" role="tabpanel" aria-labelledby="contacts-tab"> 
+                <div class="container">
+                    <div class="d-grid gap-2 col-6 mx-auto">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">New</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Key</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contact-list">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
+        <!-- Modal for contact creation/edition -->
+        <div class="modal fade" id="newContactModal" tabindex="-1" aria-labelledby="newContactModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newContactModalLabel">New contact</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="new-contact-modal-name" class="form-label">Email address</label>
+                                <input type="text" class="form-control" id="new-contact-modal-name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-contact-modal-email" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="new-contact-modal-email" aria-describedby="emailHelp">
+                                <div id="emailHelp" class="form-text">Data you enter here will only be stored on your phone, there is no server.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-contact-modal-key" class="form-label">Public Key</label>
+                                <textarea class="form-control" id="new-contact-modal-key" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick=addContactFromModal() data-bs-dismiss="modal">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
+
 </html>
