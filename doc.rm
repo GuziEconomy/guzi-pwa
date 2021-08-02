@@ -1,0 +1,417 @@
+Fonctionnement général
+
+Le fonctionnement général peut être résumé en ce petit diagramme de séquence qui déroule le processus complet de paiement entre Alice et Bob :
+
+
+
+Explications du diagramme :
+
+
+Chaque utilisateur a une blockchain personnelle qui contient l'historique de toutes les transactions auxquelles il a participé (en tant qu'acheteur et en tant que vendeur).
+
+Quand Alice veut payer Bob, elle  ajoute la transaction quelle souhaite faire à sa blockchain puis envoie cette blockchain entière si c'est la première transaction entre Alice et Bob ou simplement la partie de sa blockchain depuis sa dernière transaction avec Bob et maintenant.
+
+Bob vérifie plusieurs choses (surtout si c'est sa première transaction avec Alice) :
+
+    Est-ce qu'il fait confiance à Alice ? C'est à dire est-ce qu'il fait confiance à la personne qui s'est porté garante de la création du compte d'Alice ?
+    Est-ce que la blockchain d'Alice est valide ? Que ce soit les paiements envoyés, les Guzis créés, etc...
+    Est-ce que la transaction lui convient ?
+
+
+Si tout va bien, Bob ajoute le paiement d'Alice à sa propre blockchain. Fin.
+
+Bob ne répond pas à Alice, parce qu'un paiement envoyé est par défaut considéré comme valide. C'est pourquoi Alice l'a ajouté à sa blockchain avant même de l'envoyer.
+
+Si Bob refuse la transaction, il envoie à Alice son refus qui l'ajoute à sa blockchain et se re-crédite les Guzis. En revanche, en cas de refus Bob n'ajoute ni la transaction, ni le refus de transaction (il n'en a pas besoin).
+
+Si le paiement est accepté et que Bob compte 30 transactions dans le dernier block de la blockchain d'Alice, alors il signe le block (il le scelle) et l'envoi à Alice qui pourra l'ajouter à sa blockchain et entamer un nouveau block.
+
+Sécurité contre la suppression de transaction
+
+Dans les coulisses :
+
+     Quand Bob reçoit le paiement d'Alice accompagné de la blockchain d'Alice, il ajoute le paiement à sa blockchain, mais il ajoute également deux transactions prises au hasard de la blockchain d'Alice.
+    Ainsi, chaque transaction se multiplie et se distribue de manière plus ou moins aléatoire. Et cela permet de faire en sorte que plusieurs personnes (sans pouvoir déterminer lesquelles à l'avance) peuvent détecter une fraude.
+    Donc si Alice triche et supprime sa transaction puis va pour utiliser les mêmes Guzis une seconde fois envers Charles, Charles a des chances de remarquer l'absence de la transaction d'Alice s'il a récupéré "par hasard" la transaction frauduleuse chez Bob au préalable.
+    Charles va alors refuser la transaction, blacklister Alice et envoyer à tous ses contacts la preuve de fraude (i.e les deux transactions signées par Alice contenant les mêmes Guzis).
+    Alice est ainsi "bannie" du Guzi car elle a perdu la confiance de tous.
+
+
+Mais c'est vrai, il est tout à fait possible qu'Alice s'en sorte très longtemps sans jamais être repérée (bien qu'elle ne puisse plus faire de transaction avec Bob, à minima, car lui verra que des mêmes Guzis ont été dépensés plusieurs fois).
+Format d'une transaction
+
+version;type;date;source;target_company;target_user;amount;start_index;end_index;start_date;end_date;detail_size;detail;hash
+
+Détail des éléments de la transaction :
+Taille (octets) 	Description 	Type 	Commentaire
+1 	version 	unsigned char 	Version du format des données de la transaction
+1 	type 	unsigned char 	Type de transaction
+4 	date 	timestamp 	Un timestamp Unix indiquant la date de la transaction
+33 	source 	char[33] 	La clé publique de l'émetteur de la transaction.
+33 ou 0 	target_company 	char[33] 	La clé publique de l'éventuelle entreprise cible de la transaction.
+33 ou 0 	target_user 	char[33] 	La clé publique de l'éventuelle utilisateur cible de la transaction.
+4 	amount 	unsigned int 	Montant total de la transaction.
+2 ou 0 	start_index 	unsigned short 	Index du 1er Guzi de la transaction.
+2 ou 0 	end_index 	unsigned short 	Index du dernier Guzi de la transaction.
+4 ou 0 	start_date 	timestamp 	date du 1er Guzi d la transaction.
+4 ou 0 	end_date 	timestamp 	date du dernier Guzi de la transaction.
+2 	detail_size 	unsigned short 	Taille du champs détail.
+? 	detail 	char[] 	Texte libre ou spécifique selon le type de transaction.
+32 	hash 	char[32] 	Hash signé de la transaction.
+
+
+
+Un block fera donc (sans compter le champs "détail") entre 75 et 141 octets.
+
+
+Notes :
+
+    L'ensemble des éléments sont encodés en big-endian.
+    Chaque type de transaction ne contient que les champs nécessaires, le tableau ci-dessous est plus exhaustif. 
+
+Il existe 13 types de transaction.
+
+1/ Les Transactions de Guzis (0X)
+
+        00 - Création de Guzis.
+        01 - Création de Boites.
+        02 - Paiement en Guzis.
+        03 - Engagement en Guzis.
+        04 - Engagement en Boites.
+        05 - Refus de transaction.
+
+
+2/ Définitions de rôles (1X)
+
+        10 - Définition d'un Propriétaire d'entreprise.
+        11 - Définition d'un Administrateur d'entreprise.
+        12 - Définition d'un Travailleur d'entreprise.
+        13 - Définition d'un Payeur d'entreprise.
+        14 - Ordre de paiement.
+        15 - Ordre de départ.
+
+
+Note : Pour tous les exemples qui suivent, les transactions sont présentées au format csv (champs séparés par des ";"), mais dans la réalité, les transactions sont en binaire et leur taille dépendent de leur type.
+
+Transactions simples
+Création de Guzis
+
+Type : "00"
+Taille : 75 octets
+Description :  Cette transaction se fait par un utilisateur pour lui-même, lorsqu'il créé ses propres Guzis. Cette création ne contient donc que la date, l'identifiant de l'utilisateur et le nombre de Guzis créé.
+Un utilisateur peut créer, chaque jour, ses Guzis quotidiens. Avec :
+
+ 
+
+Format de la transaction :
+
+01;00;date;my_public_key;Amount;hash
+
+Création de Boîtes
+
+Type : "01"
+Taille : 75 octets
+Description : De la même manière que pour les Guzis, un utilisateur peut créer, chaque jour, ses Boîtes quotidiennes (autant que de Guzis).
+
+
+Format de la transaction :
+
+01;01;date;my_public_key;amount;hash
+Paiement en Guzis
+Type : "02"
+Taille :122 octets + détails
+Description : C'est la transaction principale de paiement d'un utilisateur envers un autre ou envers une entreprise, ou d'une entreprise envers une autre. Quand un utilisateur reçoit un paiement :
+
+    Il vérifie la validité de la blockchain qui l'accompagne, si celle-ci est ok, alors...
+     Il vérifie que l'ensemble des Guzis de la transaction datent de moins d'un mois (i.e ne sont pas périmés), si ceux-ci sont ok, alors...
+    Il ajoute le montant reçu à son Total.
+
+
+Format de la transaction :
+
+01;02;date;source_public_key;target_public_key;amount;start_index;end_index;start_date;end_date;detail_size;detail;hash
+
+Remarque : Pour le paiement d'un utilisateur, les index des Guzis sont généralement constant jours après jour. En revanche, pour une entreprise, les index peuvent varier selon le nombre de Boîtes mis à disposition chaque jour.
+
+Engagement en Guzis
+Type : "03"
+Taille :122 octets + détails
+Description : Un engagement est l'équivalent de ce qu'on appelle aujourd'hui un emprunt. C'est une sorte de contrat scellé dans la blockchain qui dit "je m'engage à payer X Guzis chaque jour pendant Y jours, pour un montant total de Z".
+Format de la transaction :
+
+01;03;date;source_public_key;target_public_key;amount;start_index;end_index;start_date;end_date;detail_size;detail;hash
+
+Engagement en Boîtes
+Type : "04"
+Taille : 122 octets + détails
+Format de la transaction :
+
+01;04;date;source_public_key;company_public_key;amount;start_index;end_index;start_date;end_date;detail_size;detail;hash
+
+Refus de transaction
+Type : "05"
+Taille : 140 octets
+Description : Un utilisateur a 15 jours pour refuser une transaction, sauf s'il l'ajoute à sa blockchain, auquel cas la transaction est définitive. Quand Bob reçoit un paiement et le refuse, il n'ajoute ni la transaction reçue, ni la transaction de refus à sa blockchain. En revanche quand Alice envoie une transaction de paiement, elle l'ajoute à sa blockchain. Puis si elle reçoit le refus correspondant, elle ajoute également ce refus à sa blockchain. C'est une sécurité pour conserver une preuve de refus. Si Alice n'enregistre pas ce refus, Bob pourrait lui envoyer un refus tout en conservant les Guzis reçus sans qu'Alice ne puisse prouver que la transaction avait pourtant été annulée.
+
+Format de la transaction :
+
+01;05;date;refuser_public_key;original_payer_public_key;amount;refused_transaction_hash;hash
+
+
+Attributions de rôles d'une entreprise
+
+Une entreprise est gérée par des utilisateurs qui peuvent avoir un ou plusieurs rôles parmi Travailleur, Propriétaire, Administrateur et Payeur.  
+
+Travailleur
+Type : "12"
+Taille : 143 octets + détail
+Description : Les travailleurs d'une entreprise sont les utilisateur qui ont un salaire défini régulier. A une date définie de chaque mois, l'entreprise verse les salaires correspondants à chaque Travailleur.
+
+Format de la transaction :
+
+01;12;date;source_public_key;company_public_key;role_target_public_key;salairy;detail_size;detail;hash
+
+
+Propriétaire
+Type : "10"
+Taille : 143 octets + détail
+Description : Les propriétaires d'une entreprise sont les utilisateur qui touchent les bénéfices. C'est à dire les Guzis gagnés en excès des salaires des travailleurs. A une date définie de chaque mois, l'entreprise verse ses bénéfices à ses Propriétaires au prorata des rations de chacun.
+
+Format de la transaction :
+
+01;10;date;source_public_key;company_public_key;role_target_public_key;ratio;detail_size;detail;hash
+
+
+Administrateur
+Type : "11"
+Taille : 139 octets + détail
+Description : Les administrateurs sont les utilisateurs qui ont droit de modifier les rôles d'une entreprise.
+
+Format de la transaction :
+
+01;11;date;source_public_key;company_public_key;role_target_public_key;detail_size;detail;hash
+
+Payeur
+Type : "13"
+Taille : 139 octets + détail
+Description : Les payeurs sont les utilisateurs qui ont droit de donner à l'entreprise des ordres de paiements envers d'autres entreprises.
+
+Format de la transaction :
+
+01;13;date;source_public_key;company_public_key;role_target_public_key;detail_size;detail;hash
+
+
+Note :
+
+    Attention, il n'y a pas de hiérarchie de droits, c'est à dire qu'un administrateur n'est pas un propriétaire avec des droits supérieurs. Ce sont tous des rôles différents et un utilisateur peut se voir attribuer plusieurs de ces rôles.
+    Si une entreprise n'a pas suffisamment de Guzis pour payer ses Travailleurs, alors tous les travailleurs touchent la même somme (bien que plafonnée par leur salaire).
+    Dans ces transactions d'affectation de rôle, le champs "détails" est du texte libre qui peut préciser certaines informations pour lecture "humaine".
+
+Ordres donnés à une entreprise
+
+Une entreprise n'étant pas une personne physique, elle ne peut pas payer en sa personne. Il faut donc pouvoir lui envoyer des ordres de paiement pour qu'ensuite celle-ci émette le paiement correspondant. Ce système d'ordres est détaillé dans ce schéma :
+
+
+Ordre de paiement
+
+Type : "14"
+Taille : 139 octets + détail
+Format de la transaction :
+
+01;14;date;order_origin_public_key;company_public_key;target_company_public_key;amount;detail_size;detail;hash
+
+Les messages retournés par l'entreprise (Company_A dans le schéma) sont des codes HTTP :
+
+    "403 Forbidden" : L'utilisateur n'a pas les droits de payeur.
+    "402 Payment Required" : L'entreprise n'a pas les fonds pour payer une telle somme.
+    "202 Accepted" : L'entreprise va procéder au paiement.
+
+Ordre de départ
+
+Type : "15"
+Taille : 110 octets + détail
+Description : N'importe quel utilisateur peut, à tout moment, décider de quitter l'entreprise.
+
+Format de la transaction :
+
+01;15;date;order_origin_public_key;company_public_key;role_leaved (10, 11, 12 or 13);detail_size;detail;hash
+
+
+Notes :
+
+    Si le dernier administrateur de l'entreprise quitte l'entreprise, alors le propriétaire ayant le plus d'ancienneté devient administrateur.
+    S'il n'y a pas non plus de propriétaire alors le payeur ayant le plus d'ancienneté devient administrateur.
+    S'il n'y a pas non plus de payeur alors le travailleur ayant le plus d'ancienneté devient administrateur.
+    S'il n'y a pas non plus de travailleur alors le créateur de l'entreprise devient administrateur.
+
+Format d'un Engagement (dans un block)
+
+Un engagement est l'équivalent de ce qu'on appelle aujourd'hui un emprunt. C'est une sorte de contrat scellé dans la blockchain qui dit "je m'engage à payer X Guzis chaque jour pendant Y jours, pour un montant total de Z". Chaque block contient les différents engagements encore en cours à la date de signature du block.
+
+Pour pouvoir s'engager dans un paiement à long terme, il y a deux conditions à respecter, uniquement pour les Guzis (les Boîtes ne sont pas concernées). Il faut donc :
+
+    Gagner suffisamment de Guzis, il faut donc que l'index de départ soit supérieur à 32.
+    Respecter un temps d'engagement relatif à l'âge. En respectant la formule :
+
+
+
+
+
+Cette formule implique que l'on peut s'engager, par exemple :
+
+    à 18 ans : sur 10 ans,
+    à 40 ans : sur 30 ans,
+    à 70 ans : sur 4 ans,
+    à 100 ans : sur 3 semaines.
+
+Format d'un engagement :
+Taille (octets) 	Description 	Type 	Commentaire
+1 	type 	boolean 	Guzi (0) ou Boite (1)
+4 	start_date 	timestamp 	Là date où à démarré l'engagement
+4 	end_date 	timestamp 	Là date de fin de l'engagement
+2 	start_index 	unsigned short 	L'index du 1er Guzi/Boite de chaque jour dans l'engagement
+2 	end_index 	unsigned short 	L'index du dernier Guzi/Boite de chaque jour dans l'engagement
+32 	hash 	char(32) 	Hash de la transaction qui a scellé l'engagement
+ 
+Format d'un Block
+
+
+Le format général d'un block est le suivant :
+Entête Json 	Description 	Détails 	Commentaire
+v 	version 	unsigned char 	Version du block
+d 	date 	timestamp 	Un timestamp Unix indiquant la date de signature du block
+ph 	previous_hash 	char[32] 	Le hash du block précédent.
+
+	
+	
+	
+s 	signer 	char[33] 	La clé publique du signataire du block.
+g 	guzi 	unsigned short 	Nombre de Guzis résultants des transactions du block.
+b 	boxes 	unsigned short 	Nombre de Boites résultantes des transactions du block.
+			
+t 	total 	unsigned int 	Total accumulé résultant des transactions du block
+m     	merkle_root 	char[32] 	Racine de Merkle qui hash les transactions du block
+tx 	transactions 	tx[] 	Transactions du block
+
+	
+	
+	
+en 	engagements 	eng[] 	Engagements encore valides après la date de signature du block 	
+	
+	
+
+
+Le hash du block prend uniquement les 8 premiers champs du block (version, date, previous_hash, signer, guzis, boxes, total et merkle_root).
+
+Il existe 2 types de Blocks particuliers :
+
+    Le Block de création de compte.
+    Le Block de création d'entreprise.
+
+
+Blocks de création de compte
+
+
+Lors de la création d'un compte Guzi, deux blocks sont créés : un premier avec la date de naissance du nouvel utilisateur ; un second avec la clé publique du référent.
+
+Birthday block :
+{v:1, d:birthday_date, ph:init_hash*, t:new_user_public_key, g:0, b:0, t:0, h:hash0}
+
+*init_hash = "C1A551CA1C0DEEA5EFEA51B1E1DEA112ED1DEA0A5150F5E11AB1E50C1A15EED5"
+
+Initialisation block ;
+
+{v:1, d:today, ph:hash0, t:reference_public_key, g:0, b:0, t:0, h:hash1}
+
+Détails :
+
+    new_user_public_key : L'identifiant du compte nouvellement créé, propriétaire de cette nouvelle blockchain.
+    reference_public_key : L'identifiant du compte qui se porte garant de la création de celui-ci.
+
+    hash0 : Le hash signé du block anniversaire. Signé par le nouvel utilisateur.
+    hash1 : Le hash signé du block d'initialisation. Signé par le garant.
+
+
+Pour faire une demande de création de compte, un utilisateur créé son block d'anniversaire puis l'envoie à l'utilisateur qu'il veut comme référent. Celui-ci, s'il accepte, renverra la blockchain avec le block d'initialisation ajouté et signé.
+
+Block de création d'entreprise
+
+
+01;today_date;random_hash;merkle_root;company_public_key;0;0;0;X;roles;0;(no engagement);hash
+
+Détails :
+Dans l'ensemble, c'est la même chose que pour le précédent, sauf qu'on y ajoute les rôles.
+
+    company_public_key : L'identifiant (la clé publique) de l'entreprise nouvellement créée.
+    roles : Les rôles dans l'entreprise. Ce sont les transactions qui définissent la situation initiale des rôles dans l'entreprise : un ou plusieurs utilisateurs Administrateurs, zéro ou plusieurs Propriétaires, zéro ou plusieurs utilisateurs Payeurs et enfin zéro ou plusieurs utilisateurs Travailleurs.
+    X : C'est le nombre de rôles définis dans ce block d'initialisation (une transaction par rôle).
+
+
+Scellement d'un block
+
+
+Lorsqu'un utilisateur reçoit une transaction d'autrui, si le dernier block contenant cette transaction contient 30 (ou plus) transactions, alors il la scelle :
+
+    Il vérifie que la blockchain est valide (normalement il l'a déjà fait pour accepter la transaction).
+    Il vérifie la racine de Merkle du block.
+    Il vérifie le hash du précédent block.
+    Il remplie sa clé publique.
+    Il vérifie que le nombre de guzis, de boites et que le total accumulé sont corrects.
+    Puis il hash le block en prenant les 8 premiers champs (version, timestamp, previous_block, merkle_root, signer, guzis, boites et total).
+    Enfin il signe ce hash et l'ajoute en fin de block qu'il renvoie à son propriétaire.
+
+
+Algorithmes
+
+
+De la même manière que n'importe quelle cryptomonnaie, pour assurer la validité des blockchains personnelles de chaque utilisateur, deux processus sont utilisés : hashage et chiffrement.
+Ainsi chaque transaction est hashée et signée : quand un utilisateur procède à un paiement, il hash
+
+Algorithme de chiffrement asymétrique
+
+
+Pour toutes les signatures, l'algorithme utilisé est ECDSA secp256k1 (le même que bitcoin), qui semble avoir prouvé sa valeur. Cela implique que :
+
+    Chaque clé privée fait 256 bits, soit 32 octets.
+    Chaque clé publique fait 257 bits (256 bits pour la position X + 1 bit de parité), soit 33 octets.
+
+
+Algorithme de hashage
+
+
+Pour les hash, l'algorithme utilisé est SHA-256, comme à peu près partout. Ce qui implique que les hash font 256 bits, soit 32 octets également.
+
+Racine de Merkle
+
+
+Pour calculer la racine de Merkle :
+
+    Il faut prendre l'ensemble des hash des transactions du block, dans leur ordre chronologique.
+    Puis y concaténer l'ensemble des hash des engagements dans leur ordre chronologique également.
+    Ensuite il faut les "hasher" 2 par 2, ce qui donne une nouvelle liste.
+    Réitérer le point 3 jusqu'à n'avoir plus qu'un seul hash. C'est la racine de Merkle.
+
+
+Par exemple :
+
+d1 = hash(a)
+d2 = hash(b)
+d3 = hash(c)
+d4 = hash(c)            # a, b, c are 3. that's an odd number, so we take the c twice
+
+d5 = hash(d1 concat d2)
+d6 = hash(d3 concat d4)
+
+d7 = hash(d5 concat d6)
+
+
+Messages
+
+
+Il y a donc, finalement, 5 types de messages qui peuvent transiter :
+
+    Une transaction classique accompagnée de sa blockchain. Son titre est "Transaction" et son contenu un fichier .guzi qui contient toute la blockchain de l'utilisateur.
+    Un block unique (qui aurait été scellé). Son titre est "Block" et son contenu un fichier .gbk (Guzi block) qui contient le block.
+    Une transaction seule (pour les ordres d'entreprise ou les refus par exemple). Son titre est "Transaction" et son contenu un fichier .gtx (Guzi transaction) qui contient la transaction uniquement.
+    Une demande (de signature ou de référent pour une création de compte). Son titre est "Request" et son contenu un fichier .guzi avec la blockchain de l'utilisateur.
+    Un message (refus ou validation d'ordre d'une entreprise). Son titre est "Message" et son contenu du texte simple.e

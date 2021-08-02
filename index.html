@@ -25,8 +25,9 @@
             rel="stylesheet"
             />
         <script src="./js/bootstrap.bundle.min.js"></script>
-        <script src="./js/guzi.js"></script>
         <script src="./js/localforage.min.js"></script>
+        <script src="./js/msgpack.min.js"></script>
+        <script src="./js/guzi.js"></script>
     </head>
     <body>
         <h1 class="title">Github Client</h1>
@@ -75,7 +76,7 @@
                     <div class="modal-body">
                         <form>
                             <div class="mb-3">
-                                <label for="new-contact-modal-name" class="form-label">Email address</label>
+                                <label for="new-contact-modal-name" class="form-label">Name</label>
                                 <input type="text" class="form-control" id="new-contact-modal-name">
                             </div>
                             <div class="mb-3">
@@ -92,6 +93,39 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" onclick=addContactFromModal() data-bs-dismiss="modal">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for account creation -->
+        <div class="modal fade" id="newAccountModal" tabindex="-1" aria-labelledby="newAccountModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newAccountModalLabel">Create account</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="new-account-modal-birthdate" class="form-label">Birthdate</label>
+                                <input type="text" class="form-control" id="new-account-modal-birthdate" required>
+                                <div id="birthdateHelp" class="form-text">Data you enter here will only be stored on your phone, there is no server.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-account-modal-password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="new-account-modal-password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-account-modal-password-confirmation" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="new-account-modal-password-confirmation" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick=createAccountFromModal() data-bs-dismiss="modal">Save</button>
                     </div>
                 </div>
             </div>
