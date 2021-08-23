@@ -12,26 +12,19 @@ function checkAccountIsValidOrCreateOne() {
     });
 }
 
-function createAccountFromModal() {
+async function createAccountFromModal() {
     const birthdate = document.getElementById("new-account-modal-birthdate").value;
-    const keyPair = await window.crypto.subtle.generateKey(
-        {
-            name: "ECDSA",
-            namedCurve: "P-256",
-            hash: "SHA-256"
-        },
-        true,
-        ["sign", "verify"]
-    );
-    const keyPair = await crypto.subtle.exportKey("jwk", keyPair2.privateKey);
-    const myPubKey = 0;
+    var ec = new elliptic.ec('secp256k1');
+    // Generate keys
+    var keypair = ec.genKeyPair();
+
     // Create the first block of the blockchain
     // 1. Birthday Block :
     let birthblock = {
         v: 1, // Version
         d: birthdate, // User birth date
         ph: "C1A551CA1C0DEEA5EFEA51B1E1DEA112ED1DEA0A5150F5E11AB1E50C1A15EED5", // Previous hash : here random
-        s: myPubKey, // Signer public key, here the new one created
+        s: keypair.getPublic(true, 'hex'), // Signer public key, here the new one created
         g: 0, b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
     }
     
