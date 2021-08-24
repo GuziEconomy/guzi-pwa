@@ -24,11 +24,11 @@ async function createAccountFromModal() {
         v: 1, // Version
         d: birthdate, // User birth date
         ph: "C1A551CA1C0DEEA5EFEA51B1E1DEA112ED1DEA0A5150F5E11AB1E50C1A15EED5", // Previous hash : here random
-        s: keypair.getPublic(true, 'hex'), // Signer public key, here the new one created
+        s: keypair.getPublic(true, 'hex'), // Compressed Signer public key, here the new one created
         g: 0, b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
     }
     
-    hashblock(birthblock);
+    signblock(birthblock, keypair);
 
     //let initializationblock = {
     //    v: 1,
@@ -44,17 +44,15 @@ async function createAccountFromModal() {
     //}
     // TODO : 
     // - Check password and confirmation are the same
-    // - make hashblock() method (or a makeBlock or somthing)
     // - save the blockchain
 }
 
-async function hashblock(block) {
-    const packed = msgpack.encode(block);
-    const digest = await crypto.subtle.digest('SHA-256', packed);
-
-    console.log(packed);
-    console.log(digest);
-    console.log(await crypto.subtle.digest('SHA-256', msgpack.encode(msgpack.decode(packed))));
+async function signblock(block, key) {
+    const packedblock = msgpack.encode(block);
+    const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
+    shaObj.update(packedblock);
+    const hash = shaObj.getHash("HEX");
+    block.h = hash;
 }
 
 // TODO : use messagepack and create hashes
