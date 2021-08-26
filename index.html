@@ -24,6 +24,7 @@
             href="/css/bootstrap.min.css"
             rel="stylesheet"
             />
+        <script src="./js/jquery.min.js"></script>
         <script src="./js/bootstrap.bundle.min.js"></script>
         <script src="./js/localforage.min.js"></script>
         <script src="./js/msgpack.min.js"></script>
@@ -122,12 +123,15 @@
                             <div class="mb-3">
                                 <label for="new-account-modal-password-confirmation" class="form-label">Confirm Password</label>
                                 <input type="password" class="form-control" id="new-account-modal-password-confirmation" required>
+                                <div id="pwd-error" class="alert alert-warning invisible" role="alert">
+                                    Password and confirmation must be the same
+                                </div>
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick=createAccountFromModal() data-bs-dismiss="modal">Save</button>
+                        <button type="button" class="btn btn-primary" onclick=createAccountFromModal()>Save</button>
                     </div>
                 </div>
             </div>
