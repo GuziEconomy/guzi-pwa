@@ -35,12 +35,23 @@ async function createAccountFromModal() {
     }
     
     signblock(birthblock, keypair);
+    const cipherkey = CryptoJS.AES.encrypt(JSON.stringify(keypair), pwd).toString();
+    const bytes  = CryptoJS.AES.decrypt(cipherkey, pwd);
+    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+    localforage.setItem('guzi-cipherkey', [cipherkey]).then(() => {
+        console.log(`Private key successfully saved`);
+    }).catch(function(err) {
+        console.err(`Error while saving Private key`);
+    });
 
     localforage.setItem('guzi-blockchain', [birthblock]).then(() => {
         console.log(`Blockchain successfully saved`);
     }).catch(function(err) {
         console.err(`Error while saving Blockchain`);
     });
+
+    $("#newAccountModal").modal("hide")
 
     //let initializationblock = {
     //    v: 1,
