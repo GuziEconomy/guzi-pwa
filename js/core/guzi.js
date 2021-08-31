@@ -26,18 +26,12 @@ async function createAccountFromModal() {
 
     // Create the first block of the blockchain
     // 1. Birthday Block :
-    let birthblock = {
-        v: 1, // Version
-        d: birthdate, // User birth date
-        ph: "C1A551CA1C0DEEA5EFEA51B1E1DEA112ED1DEA0A5150F5E11AB1E50C1A15EED5", // Previous hash : here "random"
-        s: keypair.getPublic(true, 'hex'), // Compressed Signer public key, here the new one created
-        g: 0, b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
-    }
+    const birthblock = makeBirthBlock(birthdate, keypair.getPublic(true, 'hex'));
     
     signblock(birthblock, keypair);
     const cipherkey = CryptoJS.AES.encrypt(JSON.stringify(keypair), pwd).toString();
     const bytes  = CryptoJS.AES.decrypt(cipherkey, pwd);
-    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    // const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
     localforage.setItem('guzi-cipherkey', [cipherkey]).then(() => {
         console.log(`Private key successfully saved`);
@@ -70,7 +64,17 @@ async function createAccountFromModal() {
     // - save the blockchain
 }
 
-async function signblock(block, key) {
+export function makeBirthBlock(birthdate, publicHexKey) {
+    return {
+        v: 1, // Version
+        d: birthdate, // User birth date
+        ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5", // Previous hash : here "random"
+        s: publicHexKey, // Compressed Signer public key, here the new one created
+        g: 0, b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
+    }
+}
+
+export async function signblock(block, key) {
     const packedblock = msgpack.encode(block);
     const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
     shaObj.update(packedblock);
@@ -85,7 +89,7 @@ function makeTx(type, target, amount) {
 
 function updateContacts() {
     localforage.getItem('guzi-contacts').then(contacts => {
-        html = "";
+        let html = "";
         if (contacts === null) { return }
         contacts.sort().forEach((contact) => {
             html += `<tr>
