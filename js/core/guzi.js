@@ -75,7 +75,8 @@ async function signblock(block, key) {
     const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
     shaObj.update(packedblock);
     const hash = shaObj.getHash("HEX");
-    block.h = hash;
+    block.h = keypair.sign(hash).toDER('hex');
+    return block;
 }
 
 // TODO : use messagepack and create hashes
