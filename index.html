@@ -65,6 +65,12 @@
         <script src="./js/libs/crypto-js/rc4.js"></script>
         <script src="./js/libs/crypto-js/rabbit.js"></script>
         <script src="./js/libs/crypto-js/rabbit-legacy.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            checkAccountIsValidOrCreateOne();
+            updateContacts();
+        });
+    </script>
     </head>
     <body>
         <h1 class="title">Github Client</h1>

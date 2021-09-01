@@ -1,14 +1,9 @@
-import {makeBirthBlock, signblock} from "/js/core/guzi.js";
-import elliptic from "/js/libs/elliptic.min.js";
-import msgpack from "/js/libs/msgpack.min.js";
-
-
 const ec = new elliptic.ec('secp256k1');
 const keypair = ec.genKeyPair();
 console.log(keypair);
 
-describe('makeBirthBlock', () => {
-    it('Should return corectly filled block', () => {
+QUnit.module('makeBirthBlock', () => {
+    QUnit.test('Should return corectly filled block', (assert) => {
         const birthdate = "12/12/2002";
         const publicHexKey = "000000000000000000000000000000000000000000000000000000000000000000";
 
@@ -22,13 +17,13 @@ describe('makeBirthBlock', () => {
             g: 0, b: 0, t: 0,
         }
 
-        expect(block).to.deep.equal(expected);
+        assert.deepEqual(block, expected);
     })
 })
 
 
-describe('signblock', () => {
-    it('Should make valid signature', () => {
+QUnit.module('signblock', () => {
+    QUnit.test('Should make valid signature', (assert) => {
         const block = {
             v: 1,
             d: "28/11/1989",
@@ -39,6 +34,6 @@ describe('signblock', () => {
 
         const signedBlock = signblock();
 
-        expect(block).to.deep.equal(expected)
+        assert.deepEqual(block, expected);
     })
 })

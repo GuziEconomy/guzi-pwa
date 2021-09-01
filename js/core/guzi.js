@@ -1,7 +1,3 @@
-document.addEventListener("DOMContentLoaded", (event) => {
-    checkAccountIsValidOrCreateOne();
-    updateContacts();
-});
 
 function checkAccountIsValidOrCreateOne() {
     return localforage.getItem('guzi-blockchain').then(blockchain => {
@@ -64,7 +60,7 @@ async function createAccountFromModal() {
     // - save the blockchain
 }
 
-export function makeBirthBlock(birthdate, publicHexKey) {
+function makeBirthBlock(birthdate, publicHexKey) {
     return {
         v: 1, // Version
         d: birthdate, // User birth date
@@ -74,7 +70,7 @@ export function makeBirthBlock(birthdate, publicHexKey) {
     }
 }
 
-export async function signblock(block, key) {
+async function signblock(block, key) {
     const packedblock = msgpack.encode(block);
     const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
     shaObj.update(packedblock);

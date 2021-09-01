@@ -1,10 +1,19 @@
 # guzi-pwa
 A Progressive Web App to use Guzi as payment system
 
+I'm trying to make this app the as simple as possible, so I use the less frameworks I can.
+
 # Run tests
-First install Cypress => https://docs.cypress.io/guides/getting-started/installing-cypress
-Then inport the project folder (guzi-pwa)
-Finaly run the tests (those are in cypress/integration/)
+
+Unit tests belong on qunit, as it's simple and needs nothing else to run anywhere.
+Run a simple server. I personaly use Python :
+
+```
+python -m SimpleHTTPServer 8000
+```
+
+Then open 127.0.0.1/tests.html
+
 
 # TODO
 1. [X] Check pwd and confirmation are the same
