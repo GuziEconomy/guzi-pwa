@@ -11,6 +11,10 @@ Run a simple server. I personaly use Python :
 ```
 python -m SimpleHTTPServer 8000
 ```
+or
+```
+python3 -m http.server
+```
 
 Then open 127.0.0.1/tests.html
 

@@ -55,9 +55,16 @@ async function createAccountFromModal() {
     //    ],
     //    ec: 0, en: []
     //}
-    // TODO : 
-    // - Check password and confirmation are the same
-    // - save the blockchain
+}
+
+function toHexString(byteArray) {
+    return Array.from(byteArray, function(byte) {
+        return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+    }).join('');
+}
+
+function exportBlockchain(bc) {
+    return toHexString(msgpack.encode(bc));
 }
 
 function makeBirthBlock(birthdate, publicHexKey) {
