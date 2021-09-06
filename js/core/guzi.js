@@ -1,13 +1,4 @@
 
-function checkAccountIsValidOrCreateOne() {
-    return localforage.getItem('guzi-blockchain').then(blockchain => {
-        if (blockchain === null) {
-            var accountModal = new bootstrap.Modal(document.getElementById('newAccountModal'));
-            accountModal.show();
-        }
-    });
-}
-
 async function createAccountFromModal() {
     const birthdate = document.getElementById("new-account-modal-birthdate").value;
     const pwd = document.getElementById("new-account-modal-password").value;
@@ -99,13 +90,24 @@ function updateContacts() {
             html += `<tr>
             <td>${contact.name}</td>
             <td>${contact.email}</td>
-            <td>${contact.key}</td>
+            <td class="text-truncate">${contact.key.substring(0, 10)}...</td>
                 </tr>`;
         });
         document.getElementById("contact-list").innerHTML = html;
     }).catch(function(err) {
         // This code runs if there were any errors
         console.log(err);
+    });
+}
+
+function updatePage() {
+    localforage.getItem('guzi-blockchain').then(blockchain => {
+        if (blockchain === null) {
+            // New user : disable import & pay
+            //$(...).hide()
+
+        } else {
+        }
     });
 }
 
