@@ -86,8 +86,22 @@
             </li>
         </ul>
         <div class="tab-content" id="myTabContent">
-            <div class="tab-pane show active" id="payment" role="tabpanel" aria-labelledby="payment-tab"> Payment</div>
-            <div class="tab-pane" id="inscription" role="tabpanel" aria-labelledby="inscription-tab"> Inscription</div>
+            <div class="tab-pane show active" id="payment" role="tabpanel" aria-labelledby="payment-tab"> 
+                <div id="payment-need-valid-account">
+                    <div class="alert alert-info" role="alert">
+                        Your account has not been yet validated.
+                    </div>
+                </div>
+                <div id="payment-valid-account"></div>
+            </div>
+            <div class="tab-pane" id="inscription" role="tabpanel" aria-labelledby="inscription-tab">
+                <div id="payment-need-valid-account">
+                    <div class="alert alert-info" role="alert">
+                        Your account has not been yet validated.
+                    </div>
+                </div>
+                <div id="payment-valid-account"> Inscription</div>
+            </div>
             <div class="tab-pane" id="contacts" role="tabpanel" aria-labelledby="contacts-tab"> 
                 <div class="container">
                     <div class="d-grid gap-2 col-6 mx-auto">
