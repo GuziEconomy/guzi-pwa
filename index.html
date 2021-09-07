@@ -65,166 +65,187 @@
         <script src="./js/libs/crypto-js/rc4.js"></script>
         <script src="./js/libs/crypto-js/rabbit.js"></script>
         <script src="./js/libs/crypto-js/rabbit-legacy.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", (event) => {
-            updateContacts();
-            updatePage();
-        });
-    </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", (event) => {
+                updateContacts();
+                updatePage();
+            });
+        </script>
     </head>
     <body>
         <div class="container">
             <div class="row">
                 <div class="col">
                     <h1 class="title">Le Guzi</h1>
-                    <h2> Niveau </h2>
+                    <div class="row">
+                        <div class="col">
+                            <h2> Niveau </h2>
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#guziInformations">
+                                Plus d'informations
+                            </button>
+                            <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newAccountModal">
+                                Créer mon compte
+                            </button>
+                        </div>
+                    </div>
                     <p>
                     Vous êtes actuellement niveau 0. Vous devez créer un compte pour passer niveau 1.
                     </p>
                     <div class="progress">
                         <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Niveau 0</div>
                     </div>
+
                     <p></p>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-9">
-                    <h2> Contacts </h2>
                     <div class="row">
-                <div class="col">
-
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Nom</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Clé</th>
-                                </tr>
-                            </thead>
-                            <tbody id="contact-list">
-                            </tbody>
-                        </table>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="btn-group-vertical">
-                        <button class="btn btn-secondary btn-lg btn-block" type="button" data-bs-toggle="modal" data-bs-target="#newAccountModal">
-                            Créer un compte
-                        </button>
-                        <button class="btn btn-primary btn-lg btn-block" type="button" data-bs-toggle="modal" data-bs-target="#guziInformations">
-                            Plus d'informations
-                        </button>
-                        <button class="btn btn-secondary btn-lg btn-block" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">
-                            Nouveau contact
-                        </button>
-                        <button class="btn btn-primary btn-lg btn-block" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
-                            Importer
-                        </button>
-                        <button class="btn btn-secondary btn-lg btn-block" type="button" data-bs-toggle="modal" data-bs-target="#payModal">
-                            Payer
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Modal for informations -->
-            <div class="modal fade" id="guziInformations" tabindex="-1" role="dialog" aria-labelledby="guziInformationsLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="newContactModalLabel">Informations</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="col">
+                            <h2> Guzis disponibles </h2>
                         </div>
-                        <div class="modal-body">
-                            <h2>Comment ça fonctionne ?</h2>
-                            <p>
-                            Créer votre compte se fait en 3 étapes :
-                            <ul>
-                                <li> Créer votre chaine de blocks avec le Block de naissance (qui contient entre autre votre identifiant et votre date de naissance).</li>
-                                <li> Envoyer votre block à un référent. Quelqu'un en qui vous avez confiance et qui vous fait confiance pour être votre garant.</li>
-                                <li> Enfin votre référent vous envoie votre chaine de blocks à laquelle il a ajouté qu'il est votre référent, que vous enregistrez ici.</li>
-                            </ul>
-                            Une fois votre chaine de blocks validée par un référent, vous pouvez utiliser toutes les fonctionnalités du Guzi.
-                            </p>
+                        <div class="col-12 col-md-auto">
+                            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
+                                Importer
+                            </button>
+                            <button class="btn btn-secondary" type="button">
+                                Créer mes Guzis
+                            </button>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <p></p>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0</div>
+                    </div>
+
+                    <p></p>
+
+                    <div class="row">
+                        <div class="col">
+                            <h2> Contacts </h2>
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <div class="btn-group-vertical">
+                                <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">
+                                    Nouveau contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Nom</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Payer</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contact-list">
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Modal for contact creation/edition -->
-            <div class="modal fade" id="newContactModal" tabindex="-1" aria-labelledby="newContactModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="newContactModalLabel">Nouveau contact</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form>
-                                <div class="mb-3">
-                                    <label for="new-contact-modal-name" class="form-label">Nom</label>
-                                    <input type="text" class="form-control" id="new-contact-modal-name">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="new-contact-modal-email" class="form-label">Adresse email</label>
-                                    <input type="email" class="form-control" id="new-contact-modal-email" aria-describedby="emailHelp">
-                                    <div id="emailHelp" class="form-text">Tout les informations restent sur votre téléphone, il n'y a aucun serveur.</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="new-contact-modal-key" class="form-label">Clé publique</label>
-                                    <textarea class="form-control" id="new-contact-modal-key" rows="3"></textarea>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" onclick=addContactFromModal() data-bs-dismiss="modal">Save</button>
-                        </div>
+
+        <!-- Modal for informations -->
+        <div class="modal fade" id="guziInformations" tabindex="-1" role="dialog" aria-labelledby="guziInformationsLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newContactModalLabel">Informations</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h2>Comment ça fonctionne ?</h2>
+                        <p>
+                        Créer votre compte se fait en 3 étapes :
+                        <ul>
+                            <li> Créer votre chaine de blocks avec le Block de naissance (qui contient entre autre votre identifiant et votre date de naissance).</li>
+                            <li> Envoyer votre block à un référent. Quelqu'un en qui vous avez confiance et qui vous fait confiance pour être votre garant.</li>
+                            <li> Enfin votre référent vous envoie votre chaine de blocks à laquelle il a ajouté qu'il est votre référent, que vous enregistrez ici.</li>
+                        </ul>
+                        Une fois votre chaine de blocks validée par un référent, vous pouvez utiliser toutes les fonctionnalités du Guzi.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Modal for account creation -->
-            <div class="modal fade" id="newAccountModal" tabindex="-1" aria-labelledby="newAccountModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="newAccountModalLabel">Create account</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form>
-                                <div class="mb-3">
-                                    <label for="new-account-modal-birthdate" class="form-label">Birthdate</label>
-                                    <input type="text" class="form-control" id="new-account-modal-birthdate" placeholder="DD/MM/YYYY" required>
-                                    <div id="birthdateHelp" class="form-text">Data you enter here will only be stored on your phone, there is no server.</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="new-account-modal-password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="new-account-modal-password" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="new-account-modal-password-confirmation" class="form-label">Confirm Password</label>
-                                    <input type="password" class="form-control" id="new-account-modal-password-confirmation" required>
-                                    <div id="pwd-error" class="alert alert-warning invisible" role="alert">
-                                        Password and confirmation must be the same
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" onclick=createAccountFromModal()>Save</button>
-                        </div>
+        <!-- Modal for contact creation/edition -->
+        <div class="modal fade" id="newContactModal" tabindex="-1" aria-labelledby="newContactModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newContactModalLabel">Nouveau contact</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="new-contact-modal-name" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="new-contact-modal-name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-contact-modal-email" class="form-label">Adresse email</label>
+                                <input type="email" class="form-control" id="new-contact-modal-email" aria-describedby="emailHelp">
+                                <div id="emailHelp" class="form-text">Tout les informations restent sur votre téléphone, il n'y a aucun serveur.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-contact-modal-key" class="form-label">Clé publique</label>
+                                <textarea class="form-control" id="new-contact-modal-key" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick=addContactFromModal() data-bs-dismiss="modal">Save</button>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Modal for account creation -->
+        <div class="modal fade" id="newAccountModal" tabindex="-1" aria-labelledby="newAccountModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newAccountModalLabel">Create account</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="new-account-modal-birthdate" class="form-label">Birthdate</label>
+                                <input type="text" class="form-control" id="new-account-modal-birthdate" placeholder="DD/MM/YYYY" required>
+                                <div id="birthdateHelp" class="form-text">Data you enter here will only be stored on your phone, there is no server.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-account-modal-password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="new-account-modal-password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-account-modal-password-confirmation" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="new-account-modal-password-confirmation" required>
+                                <div id="pwd-error" class="alert alert-warning invisible" role="alert">
+                                    Password and confirmation must be the same
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick=createAccountFromModal()>Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
     </body>
 
