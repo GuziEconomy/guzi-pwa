@@ -67,6 +67,7 @@
         <script src="./js/libs/crypto-js/rabbit-legacy.js"></script>
         <script>
             document.addEventListener("DOMContentLoaded", (event) => {
+                setBindings();
                 updateContacts();
                 updatePage();
             });
@@ -262,8 +263,8 @@
                     <div class="modal-body">
                         <form>
                             <div class="mb-3">
-                                <label for="import-data-pasted" class="form-label">Coller ici la contenu</label>
-                                <textarea class="form-control" id="import-data-pasted" rows="3"></textarea>
+                                <label for="import-data-pasted" class="form-label">Coller ici le contenu du message</label>
+                                <textarea class="form-control" id="import-data-pasted" rows="5"></textarea>
                             </div>
                         </form>
                     </div>

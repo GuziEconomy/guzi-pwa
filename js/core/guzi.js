@@ -139,3 +139,19 @@ function addContact(name, email, key) {
         });
     });
 }
+
+function importData(data) {
+    // TODO
+    // - Detect if it's a block
+    // - Detect if it's a blockchain
+    // - if it's a payment
+    // - or a validated account
+    // - And act for it
+}
+
+function setBindings() {
+    console.log("binding done");
+    $("#import-data-pasted").bind('paste', function(e) {
+        importData(e.originalEvent.clipboardData.getData('text'));
+    });
+}
