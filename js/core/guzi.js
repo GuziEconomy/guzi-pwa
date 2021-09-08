@@ -58,6 +58,18 @@ function exportBlockchain(bc) {
     return toHexString(msgpack.encode(bc));
 }
 
+function sendBlockchain() {
+    localforage.getItem('guzi-blockchain').then(blockchain => {
+        if (blockchain === null) {
+            alert("Aucune chaine de blocks détectée");
+        } else {
+            const hexBc = exportBlockchain(blockchain);
+            window.open(`mailto:test@example.com?subject=Demande de référent&body=${hexBc}`);
+        }
+    });
+            
+}
+
 function makeBirthBlock(birthdate, publicHexKey) {
     return {
         v: 1, // Version
@@ -103,6 +115,7 @@ function updateContacts() {
 function updatePage() {
     localforage.getItem('guzi-blockchain').then(blockchain => {
         if (blockchain === null) {
+            $("#sendAccountButton").hide();
             $("#importValidatedAccountButton").hide();
             $("#createMyGuzisButton").prop("disabled", true);
             $("#importPaymentButton").prop("disabled", true);
@@ -114,6 +127,7 @@ function updatePage() {
             // Not new user : hide account creation
             $("#guziInformationsButton").hide();
             $("#newAccountButton").hide();
+            $("#sendAccountButton").hide();
             $("#importValidatedAccountButton").hide();
         }
     });
