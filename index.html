@@ -82,11 +82,14 @@
                             <h2> Niveau </h2>
                         </div>
                         <div class="col-12 col-md-auto">
-                            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#guziInformations">
+                            <button id="guziInformationsButton" class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#guziInformationsModal">
                                 Plus d'informations
                             </button>
-                            <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newAccountModal">
+                            <button id="newAccountButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newAccountModal">
                                 Créer mon compte
+                            </button>
+                            <button id="importValidatedAccountButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
+                                Importer mon compte validé
                             </button>
                         </div>
                     </div>
@@ -104,10 +107,10 @@
                             <h2> Guzis disponibles </h2>
                         </div>
                         <div class="col-12 col-md-auto">
-                            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
-                                Importer
+                            <button id="importPaymentButton" class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
+                                Importer paiement
                             </button>
-                            <button class="btn btn-secondary" type="button">
+                            <button id="createMyGuzisButton" class="btn btn-secondary" type="button">
                                 Créer mes Guzis
                             </button>
                         </div>
@@ -125,7 +128,7 @@
                         </div>
                         <div class="col-12 col-md-auto">
                             <div class="btn-group-vertical">
-                                <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">
+                                <button id="newContactButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">
                                     Nouveau contact
                                 </button>
                             </div>
@@ -152,7 +155,7 @@
 
 
         <!-- Modal for informations -->
-        <div class="modal fade" id="guziInformations" tabindex="-1" role="dialog" aria-labelledby="guziInformationsLabel" aria-hidden="true">
+        <div class="modal fade" id="guziInformationsModal" tabindex="-1" role="dialog" aria-labelledby="guziInformationsLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -172,7 +175,7 @@
                         </p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     </div>
                 </div>
             </div>
@@ -204,8 +207,8 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick=addContactFromModal() data-bs-dismiss="modal">Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" onclick=addContactFromModal() data-bs-dismiss="modal"> Enregistrer</button>
                     </div>
                 </div>
             </div>
@@ -240,12 +243,35 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick=createAccountFromModal()>Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" onclick=createAccountFromModal()> Enregistrer</button>
                     </div>
                 </div>
             </div>
         </div>
+        </div>
+
+        <!-- Modal for any data import -->
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newContactModalLabel"> Importer</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="import-data-pasted" class="form-label">Coller ici la contenu</label>
+                                <textarea class="form-control" id="import-data-pasted" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Annuler</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </body>
 

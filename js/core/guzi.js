@@ -100,18 +100,21 @@ function updateContacts() {
     });
 }
 
-// TODO
 function updatePage() {
     localforage.getItem('guzi-blockchain').then(blockchain => {
         if (blockchain === null) {
-            // New user : disable import and pay and "created my guzis"
-            //$(...).hide()
-
-            // Else 1 : account to validate
-            // Not new user : disable pay and "created my guzis"
-            // Else 2 : account validated
+            $("#importValidatedAccountButton").hide();
+            $("#createMyGuzisButton").prop("disabled", true);
+            $("#importPaymentButton").prop("disabled", true);
+        } else if (blockchain.length === 1) {
+            $("#newAccountButton").hide();
+            $("#createMyGuzisButton").prop("disabled", true);
+            $("#importPaymentButton").prop("disabled", true);
         } else {
             // Not new user : hide account creation
+            $("#guziInformationsButton").hide();
+            $("#newAccountButton").hide();
+            $("#importValidatedAccountButton").hide();
         }
     });
 }
