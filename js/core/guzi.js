@@ -1,4 +1,3 @@
-
 async function createAccountFromModal() {
     const birthdate = document.getElementById("new-account-modal-birthdate").value;
     const pwd = document.getElementById("new-account-modal-password").value;
@@ -13,9 +12,9 @@ async function createAccountFromModal() {
 
     // Create the first block of the blockchain
     // 1. Birthday Block :
-    const birthblock = makeBirthBlock(birthdate, keypair.getPublic(true, 'hex'));
+    let birthblock = makeBirthBlock(birthdate, keypair.getPublic(true, 'hex'));
     
-    signblock(birthblock, keypair);
+    birthblock = await signblock(birthblock, keypair);
     const cipherkey = CryptoJS.AES.encrypt(JSON.stringify(keypair), pwd).toString();
     const bytes  = CryptoJS.AES.decrypt(cipherkey, pwd);
     // const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
@@ -26,13 +25,17 @@ async function createAccountFromModal() {
         console.err(`Error while saving Private key`);
     });
 
+    console.log(birthblock);
     localforage.setItem('guzi-blockchain', [birthblock]).then(() => {
         console.log(`Blockchain successfully saved`);
     }).catch(function(err) {
-        console.err(`Error while saving Blockchain`);
+        console.error(`Error while saving Blockchain`);
+        console.error(err);
+    }).then(() => {
+        updatePage();
+        $("#newAccountModal").modal("hide")
     });
 
-    $("#newAccountModal").modal("hide")
 
     //let initializationblock = {
     //    v: 1,
@@ -58,11 +61,23 @@ function exportBlockchain(bc) {
     return toHexString(msgpack.encode(bc));
 }
 
+function hexToBytes(hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+    bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+}
+
+function hexToJson(hex) {
+    const bytes = hexToBytes(hex);
+    return msgpack.decode(bytes);
+}
+
 function sendBlockchain() {
     localforage.getItem('guzi-blockchain').then(blockchain => {
         if (blockchain === null) {
-            alert("Aucune chaine de blocks détectée");
+            showModalError("Aucune chaine de blocks détectée");
         } else {
+            console.log(blockchain);
             const hexBc = exportBlockchain(blockchain);
             window.open(`mailto:test@example.com?subject=Demande de référent&body=${hexBc}`);
         }
@@ -80,12 +95,26 @@ function makeBirthBlock(birthdate, publicHexKey) {
     }
 }
 
-async function signblock(block, key) {
-    const packedblock = msgpack.encode(block);
+function hashblock(block) {
+    const b = {
+        v: block.v,
+        d: block.d,
+        ph: block.ph,
+        s: block.s,
+        g: block.g,
+        b: block.b,
+        t: block.t,
+    };
+    const packedblock = msgpack.encode(b);
     const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
     shaObj.update(packedblock);
-    const hash = shaObj.getHash("HEX");
-    block.h = keypair.sign(hash).toDER('hex');
+    return shaObj.getHash("HEX");
+}
+
+async function signblock(block, key) {
+    const hash = hashblock(block);
+    console.log(key.sign(hash));
+    block.h = key.sign(hash).toDER('hex');
     return block;
 }
 
@@ -115,20 +144,27 @@ function updateContacts() {
 function updatePage() {
     localforage.getItem('guzi-blockchain').then(blockchain => {
         if (blockchain === null) {
+            $("#guziInformationsButton").show();
+            $("#newAccountButton").show();
             $("#sendAccountButton").hide();
-            $("#importValidatedAccountButton").hide();
             $("#createMyGuzisButton").prop("disabled", true);
+            $("#importValidatedAccountButton").hide();
             $("#importPaymentButton").prop("disabled", true);
         } else if (blockchain.length === 1) {
+            $("#guziInformationsButton").show();
             $("#newAccountButton").hide();
+            $("#sendAccountButton").show();
             $("#createMyGuzisButton").prop("disabled", true);
+            $("#importValidatedAccountButton").show();
             $("#importPaymentButton").prop("disabled", true);
         } else {
             // Not new user : hide account creation
             $("#guziInformationsButton").hide();
             $("#newAccountButton").hide();
             $("#sendAccountButton").hide();
+            $("#createMyGuzisButton").prop("disabled", false);
             $("#importValidatedAccountButton").hide();
+            $("#importPaymentButton").prop("disabled", false);
         }
     });
 }
@@ -154,18 +190,87 @@ function addContact(name, email, key) {
     });
 }
 
-function importData(data) {
+function importData(data, modal) {
     // TODO
     // - Detect if it's a block
     // - Detect if it's a blockchain
     // - if it's a payment
     // - or a validated account
     // - And act for it
+    data = data.replace(/\s/g, '');
+    jsondata = hexToJson(data);
+    console.log(jsondata);
+    if (! isValidBC(jsondata)) {
+        showModalError("Les informations données sont invalides.");
+        return false;
+    }
+    if (jsondata.length === 1) {
+        console.log("It's an initialization");
+        if (modal) {
+            modal.modal("hide");
+        }
+        showModalAccountValidation(jsondata[0]);
+        return true;
+    }
+    if (jsondata.length > 1) {
+        console.log("It's a payment");
+        return true;
+    }
+}
+
+/**
+ * Return true if given blockchain is valid, false else.
+ */
+function isValidBC(blockchain) {
+    if (! Array.isArray(blockchain)) {
+        return false;
+    }
+    if (blockchain.length === 0) {
+        return false;
+    }
+    return true;
+}
+
+function isValidInitializationBlock(block) {
+    const key = ec.keyFromPublic(block.s, 'hex');
+    console.log(key);
+    return block.ph === "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5"
+        && block.v === 1
+        && block.g === 0
+        && block.b === 0
+        && block.t === 0
+        && key.verify(hashblock(block), block.h);
 }
 
 function setBindings() {
     console.log("binding done");
     $("#import-data-pasted").bind('paste', function(e) {
-        importData(e.originalEvent.clipboardData.getData('text'));
+        importData(e.originalEvent.clipboardData.getData('text'), $("#importModal"));
     });
+}
+
+function showModalImport() {
+    $("#import-data-pasted").val("");
+    $("#importModal").modal("show");
+}
+
+function showModalError(msg) {
+    $("#modal-error-content").html(msg);
+    $("#errorModal").modal("show");
+}
+
+function showModalAccountValidation(block) {
+
+    let html = `
+    <tr> <td>Version</td> <td>${block.v}</td></tr>
+    <tr> <td>Birthdate</td> <td>${block.d}</td></tr>
+    <tr> <td>Guzis</td> <td>${block.g}</td></tr>
+    <tr> <td>Boxes</td> <td>${block.b}</td></tr>
+    <tr> <td>Total</td> <td>${block.t}</td></tr>
+    <tr> <td>Signataire</td> <td  class="overflow-auto">${block.s}</td></tr>
+    <tr> <td>Hash de base</td> <td  class="overflow-auto">${block.ph}</td></tr>
+    <tr> <td>Hash</td> <td class="overflow-auto">${block.h}</td></tr>`;
+    $("#account-validation-detail").html(html);
+
+    $("#accountValidationModal").modal("show");
 }

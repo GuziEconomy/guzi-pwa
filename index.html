@@ -92,7 +92,7 @@
                             <button id="sendAccountButton" class="btn btn-secondary" type="button" onclick="sendBlockchain()">
                                 Envoyer ma chaine à un référent
                             </button>
-                            <button id="importValidatedAccountButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
+                            <button id="importValidatedAccountButton" class="btn btn-secondary" type="button" onclick="showModalImport()">
                                 Importer mon compte validé
                             </button>
                         </div>
@@ -111,8 +111,8 @@
                             <h2> Guzis disponibles </h2>
                         </div>
                         <div class="col-12 col-md-auto">
-                            <button id="importPaymentButton" class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
-                                Importer paiement
+                            <button id="importPaymentButton" class="btn btn-primary" type="button" onclick="showModalImport()">
+                                Importer demande/paiement
                             </button>
                             <button id="createMyGuzisButton" class="btn btn-secondary" type="button">
                                 Créer mes Guzis
@@ -260,7 +260,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="newContactModalLabel"> Importer</h5>
+                        <h5 class="modal-title" id="importModalLabel"> Importer</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -273,6 +273,61 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Annuler</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for account validation -->
+        <div class="modal fade" id="accountValidationModal" tabindex="-1" aria-labelledby="accountValidationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="accountValidationModalLabel"> Devenir référent</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Champs</th>
+                                            <th scope="col">Valeur</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="account-validation-detail" class="overflow-auto">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Annuler</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for any error -->
+        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newContactModalLabel"> Erreur</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <div id="modal-error-content" class="alert alert-danger" role="alert">
+                                An error occured
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Fermer</button>
                     </div>
                 </div>
             </div>
