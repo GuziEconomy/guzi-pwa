@@ -287,23 +287,26 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form>
-                            <div class="mb-3">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Champs</th>
-                                            <th scope="col">Valeur</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="account-validation-detail" class="overflow-auto">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </form>
+                        <table class="table table-striped overflow-auto">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Champs</th>
+                                    <th scope="col">Valeur</th>
+                                </tr>
+                            </thead>
+                            <tbody id="account-validation-detail">
+                            </tbody>
+                        </table>
+                        <div id="account-validation-state"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Annuler</button>
+                        
+                        <button id="accountValidationButton" type="button" class="btn btn-success">
+                            Se porter garant du compte
+                        </button>
+
+                        </div>
                     </div>
                 </div>
             </div>

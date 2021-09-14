@@ -232,6 +232,7 @@ function isValidBC(blockchain) {
 }
 
 function isValidInitializationBlock(block) {
+    const ec = new elliptic.ec('secp256k1');
     const key = ec.keyFromPublic(block.s, 'hex');
     console.log(key);
     return block.ph === "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5"
@@ -259,6 +260,8 @@ function showModalError(msg) {
     $("#errorModal").modal("show");
 }
 
+// TODO : 
+// - find a way to get this block when user validates account
 function showModalAccountValidation(block) {
 
     let html = `
@@ -267,10 +270,34 @@ function showModalAccountValidation(block) {
     <tr> <td>Guzis</td> <td>${block.g}</td></tr>
     <tr> <td>Boxes</td> <td>${block.b}</td></tr>
     <tr> <td>Total</td> <td>${block.t}</td></tr>
-    <tr> <td>Signataire</td> <td  class="overflow-auto">${block.s}</td></tr>
-    <tr> <td>Hash de base</td> <td  class="overflow-auto">${block.ph}</td></tr>
-    <tr> <td>Hash</td> <td class="overflow-auto">${block.h}</td></tr>`;
+    <tr> <td>Signataire</td> <td>${block.s}</td></tr>
+    <tr> <td>Hash de base</td> <td>${block.ph}</td></tr>
+    <tr> <td>Hash</td> <td>${block.h}</td></tr>`;
     $("#account-validation-detail").html(html);
 
+    if (isValidInitializationBlock(block)) {
+        $("#account-validation-state").html(`
+            <div class="alert alert-success" role="alert">
+            Le block semble valide
+            </div>
+        `);
+        $("#accountValidationButton").show();
+        $("#accountValidationButton").on("click", () => {
+            validateAccount(block);
+        });
+
+    } else {
+        $("#account-validation-state").html(`
+            <div class="alert alert-warning" role="alert">
+            Attention : le block n'est pas valide !
+            </div>
+        `);
+        $("#accountValidationButton").hide();
+    }
+
     $("#accountValidationModal").modal("show");
+}
+
+function validateAccount(birthblock) {
+    return [1, birthblock];
 }

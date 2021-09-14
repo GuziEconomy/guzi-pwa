@@ -7,7 +7,7 @@ const ec = new elliptic.ec('secp256k1');
 
 const keypair = ec.keyFromPrivate("ed945716dddb7af2c9774939e9946f1fee31f5ec0a3c6ec96059f119c396912f", "hex");
 
-const validInitializationBlock = {
+const validBirthBlock = {
     b: 0,
     d: "28/11/1989",
     g: 0,
@@ -158,8 +158,39 @@ QUnit.module('isValidBC', () => {
 
 QUnit.module('isValidInitializationBlock', () => {
     QUnit.test('Should return true for valid block', (assert) => {
-        const result = isValidInitializationBlock(validInitializationBlock);
+        const result = isValidInitializationBlock(validBirthBlock);
 
         assert.true(result);
+    })
+})
+
+QUnit.module('validateAccount', () => {
+    QUnit.test('Should return a 2 blocks long Blockchain', (assert) => {
+        const result = validateAccount(validBirthBlock);
+
+        assert.equal(result.length, 2);
+    })
+
+    QUnit.test('Should return unmodified birth block', (assert) => {
+        const result = validateAccount(validBirthBlock);
+
+        assert.equal(result[1], validBirthBlock);
+    })
+
+    QUnit.test('Should return a valid initialization block', (assert) => {
+        const result = validateAccount(validBirthBlock);
+
+        const expectedInitializationBlock = {
+            b: 0,
+            d: "28/11/1989",
+            g: 0,
+            h: "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
+            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+            s: "02e31267fc0e24e6a3da9e40fedb23f98c750bddb3278a1873ab49c601f3bbd66b",
+            t: 0,
+            v: 1
+        };
+
+        assert.equal(result[0], expectedInitializationBlock);
     })
 })
