@@ -7,6 +7,10 @@ const ec = new elliptic.ec('secp256k1');
 
 const keypair = ec.keyFromPrivate("ed945716dddb7af2c9774939e9946f1fee31f5ec0a3c6ec96059f119c396912f", "hex");
 
+// ({ "priv":"e68955130b2c4adc6165b0bae6e6b8f4bcce1879dbf0c6f91b3acc69479ef272",
+// "pub": "03cbe4edbfbbc99dfbae83e8c591fafdd6a82d61589be6f60775e3fe2a4677ef46")
+const keypair2 = ec.keyFromPrivate("e68955130b2c4adc6165b0bae6e6b8f4bcce1879dbf0c6f91b3acc69479ef272", "hex");
+
 const validBirthBlock = {
     b: 0,
     d: "28/11/1989",
@@ -165,32 +169,32 @@ QUnit.module('isValidInitializationBlock', () => {
 })
 
 QUnit.module('validateAccount', () => {
-    QUnit.test('Should return a 2 blocks long Blockchain', (assert) => {
-        const result = validateAccount(validBirthBlock);
+    QUnit.test('Should return a 2 blocks long Blockchain', async (assert) => {
+        const result = await validateAccount(validBirthBlock, keypair2);
 
         assert.equal(result.length, 2);
     })
 
-    QUnit.test('Should return unmodified birth block', (assert) => {
-        const result = validateAccount(validBirthBlock);
+    QUnit.test('Should return unmodified birth block', async (assert) => {
+        const result = await validateAccount(validBirthBlock, keypair2);
 
         assert.equal(result[1], validBirthBlock);
     })
 
-    QUnit.test('Should return a valid initialization block', (assert) => {
-        const result = validateAccount(validBirthBlock);
+    QUnit.test('Should return a valid initialization block', async (assert) => {
+        const result = await validateAccount(validBirthBlock, keypair2);
 
         const expectedInitializationBlock = {
             b: 0,
-            d: "28/11/1989",
+            d: new Date().toLocaleString().slice(0, 10),
             g: 0,
-            h: "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
-            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
-            s: "02e31267fc0e24e6a3da9e40fedb23f98c750bddb3278a1873ab49c601f3bbd66b",
+            h: "3045022100921a5a324038a79dcfe6812cfd767a934de62f538747744a2bbd98bfb9a4673002204b52a1ae5ddd2facb4950b9bd06420e7711066b1a60c0631c120d58c4640875d",
+            ph:  "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
+            s: "03cbe4edbfbbc99dfbae83e8c591fafdd6a82d61589be6f60775e3fe2a4677ef46",
             t: 0,
             v: 1
         };
 
-        assert.equal(result[0], expectedInitializationBlock);
+        assert.deepEqual(result[0], expectedInitializationBlock);
     })
 })

@@ -36,19 +36,6 @@ async function createAccountFromModal() {
         $("#newAccountModal").modal("hide")
     });
 
-
-    //let initializationblock = {
-    //    v: 1,
-    //    d: Date.now(),
-    //    ph: hashblock(birthblock),
-    //    s: refPubKey,
-    //    g: 1, b: 1, t: 0,
-    //    tc: 2, tx: [
-    //        {v: 1, t: 0, d: Date.now(), t: myPubKey, a: 1, h: null},
-    //        {v: 1, t: 1, d: Date.now(), t: myPubKey, a: 1, h: null}
-    //    ],
-    //    ec: 0, en: []
-    //}
 }
 
 function toHexString(byteArray) {
@@ -113,7 +100,6 @@ function hashblock(block) {
 
 async function signblock(block, key) {
     const hash = hashblock(block);
-    console.log(key.sign(hash));
     block.h = key.sign(hash).toDER('hex');
     return block;
 }
@@ -298,6 +284,17 @@ function showModalAccountValidation(block) {
     $("#accountValidationModal").modal("show");
 }
 
-function validateAccount(birthblock) {
-    return [1, birthblock];
+async function validateAccount(birthblock, key) {
+
+    let initializationBlock = {
+            b: 0,
+            d: new Date().toLocaleString().slice(0, 10),
+            g: 0,
+            ph: birthblock.h,
+            s: key.getPublic(true, 'hex'),
+            t: 0,
+            v: 1
+    }
+    initializationBlock = await signblock(initializationBlock, key);
+    return [initializationBlock, birthblock];
 }
