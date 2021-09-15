@@ -1,3 +1,4 @@
+// TODO : Next step => Import referent validated account
 async function createAccountFromModal() {
     const birthdate = document.getElementById("new-account-modal-birthdate").value;
     const pwd = document.getElementById("new-account-modal-password").value;
@@ -15,17 +16,8 @@ async function createAccountFromModal() {
     let birthblock = makeBirthBlock(birthdate, keypair.getPublic(true, 'hex'));
     
     birthblock = await signblock(birthblock, keypair);
-    const cipherkey = CryptoJS.AES.encrypt(JSON.stringify(keypair), pwd).toString();
-    const bytes  = CryptoJS.AES.decrypt(cipherkey, pwd);
-    // const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    cypherAndSavePrivateKey(keypair, pwd);
 
-    localforage.setItem('guzi-cipherkey', [cipherkey]).then(() => {
-        console.log(`Private key successfully saved`);
-    }).catch(function(err) {
-        console.err(`Error while saving Private key`);
-    });
-
-    console.log(birthblock);
     localforage.setItem('guzi-blockchain', [birthblock]).then(() => {
         console.log(`Blockchain successfully saved`);
     }).catch(function(err) {
@@ -36,6 +28,35 @@ async function createAccountFromModal() {
         $("#newAccountModal").modal("hide")
     });
 
+}
+
+function cypherAndSavePrivateKey(keypair, pwd) {
+    const cipherkey = CryptoJS.AES.encrypt(JSON.stringify(keypair), pwd).toString();
+
+    localforage.setItem('guzi-cipherkey', [cipherkey]).then(() => {
+        console.log(`Private key successfully saved`);
+    }).catch(function(err) {
+        console.err(`Error while saving Private key`);
+    });
+}
+
+// TODO : find a way to handle wrong password
+function askPwdAndLoadPrivateKey(callback) {
+    $("#pwdValidation").on("click", async () => {
+        const pwd = $("#pwdPrompt").val();
+        const cipherkey  = await localforage.getItem('guzi-cipherkey');
+        const bytes  = CryptoJS.AES.decrypt(cipherkey[0], pwd);
+        if (bytes.sigBytes === 0) {
+            showModalError("Mot de passe incorect.");
+            return;
+        }
+        let keypair = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        const ec = new elliptic.ec('secp256k1');
+        keypair = ec.keyFromPrivate(keypair.priv);
+        $("#pwdModal").modal("hide");
+        callback(keypair);
+    });
+    $("#pwdModal").modal("show");
 }
 
 function toHexString(byteArray) {
@@ -59,16 +80,18 @@ function hexToJson(hex) {
     return msgpack.decode(bytes);
 }
 
-function sendBlockchain() {
-    localforage.getItem('guzi-blockchain').then(blockchain => {
-        if (blockchain === null) {
-            showModalError("Aucune chaine de blocks détectée");
-        } else {
-            console.log(blockchain);
-            const hexBc = exportBlockchain(blockchain);
-            window.open(`mailto:test@example.com?subject=Demande de référent&body=${hexBc}`);
-        }
-    });
+async function sendBlockchain(bc=-1) {
+    if (bc === -1) {
+        bc = await localforage.getItem('guzi-blockchain');
+    }
+
+    if (bc === null) {
+        showModalError("Aucune chaine de blocks détectée");
+    } else {
+        console.log(bc);
+        const hexBc = exportBlockchain(bc);
+        window.open(`mailto:test@example.com?subject=Demande de référent&body=${hexBc}`);
+    }
             
 }
 
@@ -269,7 +292,12 @@ function showModalAccountValidation(block) {
         `);
         $("#accountValidationButton").show();
         $("#accountValidationButton").on("click", () => {
-            validateAccount(block);
+            $("#accountValidationModal").modal("hide");
+            askPwdAndLoadPrivateKey(async (keypair) => {
+                const bc = await validateAccount(block, keypair);
+                sendBlockchain(bc);
+                $("#accountValidationModal").modal("hide");
+            });
         });
 
     } else {
