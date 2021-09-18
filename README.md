@@ -38,7 +38,7 @@ Then open 127.0.0.1/tests.html
 1. [X] Check pwd and confirmation are the same
 2. [X] Save encoded private key with given password
 3. [X] Save Blockchain localy
-4. [ ] Send an account creation request
+4. [X] Send an account creation request
 5. [ ] Create a payment
 6. [ ] Send a payment
 7. [ ] Open and accept/reject account creation request

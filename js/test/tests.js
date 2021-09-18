@@ -184,11 +184,14 @@ QUnit.module('validateAccount', () => {
     QUnit.test('Should return a valid initialization block', async (assert) => {
         const result = await validateAccount(validBirthBlock, keypair2);
 
+        assert.true(keypair2.verify(hashblock(result[0]), result[0].h));
+
+        delete result[0].h;
+
         const expectedInitializationBlock = {
             b: 0,
             d: new Date().toLocaleString().slice(0, 10),
             g: 0,
-            h: "3045022100921a5a324038a79dcfe6812cfd767a934de62f538747744a2bbd98bfb9a4673002204b52a1ae5ddd2facb4950b9bd06420e7711066b1a60c0631c120d58c4640875d",
             ph:  "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
             s: "03cbe4edbfbbc99dfbae83e8c591fafdd6a82d61589be6f60775e3fe2a4677ef46",
             t: 0,
@@ -196,5 +199,46 @@ QUnit.module('validateAccount', () => {
         };
 
         assert.deepEqual(result[0], expectedInitializationBlock);
+    })
+})
+
+QUnit.module('updateBlockchain', () => {
+    QUnit.test("Should return the new blockchain if it's ok", async (assert) => {
+        const oldBC = [];
+        const newBC = [validBirthBlock];
+        const result = updateBlockchain(oldBC, newBC);
+
+        assert.equal(result, newBC);
+    })
+
+    QUnit.test("Should raise error if new does not start old", async (assert) => {
+        const oldBC = [validBirthBlock];
+        const newBC = [];
+
+        assert.throws(() => {
+                updateBlockchain(oldBC, newBC)
+            },
+            ( err ) => err.toString() === "Invalid new Blockchain",
+            "No error thrown"
+        );
+    })
+
+    QUnit.test("Should raise error if new does not start old (long bc)", async (assert) => {
+
+        const oldBC = [validBirthBlock, validBirthBlock, validBirthBlock, validBirthBlock];
+        const newBC = [validBirthBlock, validBirthBlock, validBirthBlock];
+
+        assert.throws(() => {
+                updateBlockchain(oldBC, newBC)
+            },
+            ( err ) => err.toString() === "Invalid new Blockchain",
+            "No error thrown"
+        );
+    })
+
+    QUnit.test("Should be OK to replace blockchain by itself", async (assert) => {
+        const bc = [validBirthBlock, validBirthBlock, validBirthBlock, validBirthBlock];
+        const result = updateBlockchain(bc, bc);
+        assert.equal(result, bc);
     })
 })

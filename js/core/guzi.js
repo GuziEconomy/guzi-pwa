@@ -1,4 +1,7 @@
-// TODO : Next step => Import referent validated account
+// TODO : Next step => Update msg when you are level 2
+// + Test back from step 0
+// + Create my Guzis
+// + Payment then
 async function createAccountFromModal() {
     const birthdate = document.getElementById("new-account-modal-birthdate").value;
     const pwd = document.getElementById("new-account-modal-password").value;
@@ -8,26 +11,32 @@ async function createAccountFromModal() {
         return;
     }
     var ec = new elliptic.ec('secp256k1');
-    // Generate keys
     var keypair = ec.genKeyPair();
 
-    // Create the first block of the blockchain
-    // 1. Birthday Block :
+    // Create the first block of the blockchain : the Birthday Block
     let birthblock = makeBirthBlock(birthdate, keypair.getPublic(true, 'hex'));
-    
     birthblock = await signblock(birthblock, keypair);
     cypherAndSavePrivateKey(keypair, pwd);
+    saveBlockchain([birthblock]).then(() => {
+        updatePage();
+        $("#newAccountModal").modal("hide")
+    });
+}
 
-    localforage.setItem('guzi-blockchain', [birthblock]).then(() => {
+function saveBlockchain(bc) {
+    return localforage.setItem('guzi-blockchain', bc).then(() => {
         console.log(`Blockchain successfully saved`);
     }).catch(function(err) {
         console.error(`Error while saving Blockchain`);
         console.error(err);
-    }).then(() => {
-        updatePage();
-        $("#newAccountModal").modal("hide")
     });
+}
 
+/**
+ * Return the blockchain locally saved
+ */
+async function loadBlockchain() {
+    return await localforage.getItem('guzi-blockchain');
 }
 
 function cypherAndSavePrivateKey(keypair, pwd) {
@@ -82,7 +91,7 @@ function hexToJson(hex) {
 
 async function sendBlockchain(bc=-1) {
     if (bc === -1) {
-        bc = await localforage.getItem('guzi-blockchain');
+        bc = await loadBlockchain();
     }
 
     if (bc === null) {
@@ -151,7 +160,7 @@ function updateContacts() {
 }
 
 function updatePage() {
-    localforage.getItem('guzi-blockchain').then(blockchain => {
+    loadBlockchain().then(blockchain => {
         if (blockchain === null) {
             $("#guziInformationsButton").show();
             $("#newAccountButton").show();
@@ -204,8 +213,6 @@ function importData(data, modal) {
     // - Detect if it's a block
     // - Detect if it's a blockchain
     // - if it's a payment
-    // - or a validated account
-    // - And act for it
     data = data.replace(/\s/g, '');
     jsondata = hexToJson(data);
     console.log(jsondata);
@@ -220,8 +227,23 @@ function importData(data, modal) {
         }
         showModalAccountValidation(jsondata[0]);
         return true;
-    }
-    if (jsondata.length > 1) {
+    } else if (jsondata.length === 2) {
+        console.log("It's a validated account");
+        if (modal) {
+            modal.modal("hide");
+        }
+        try {
+            const blockchain = hexToJson(data);
+            await updateMyBlockchain(blockchain);
+            updatePage();
+
+        } catch (error) {
+            showModalError("La blockchain donnée n'est pas valide");
+            console.log(error);
+            return false;
+        }
+        return true;
+    } else if (jsondata.length > 1) {
         console.log("It's a payment");
         return true;
     }
@@ -252,6 +274,19 @@ function isValidInitializationBlock(block) {
         && key.verify(hashblock(block), block.h);
 }
 
+async function updateMyBlockchain(blockchain) {
+    const oldBC = await loadBlockchain();
+    const newBC = updateBlockchain(oldBC, blockchain);
+    return saveBlockchain(newBC);
+}
+
+function updateBlockchain(oldBC, newBC) {
+    if (! toHexString(newBC).endsWith(toHexString(oldBC))) {
+        throw "Invalid new Blockchain";
+    }
+    return newBC;
+}
+
 function setBindings() {
     console.log("binding done");
     $("#import-data-pasted").bind('paste', function(e) {
@@ -269,8 +304,6 @@ function showModalError(msg) {
     $("#errorModal").modal("show");
 }
 
-// TODO : 
-// - find a way to get this block when user validates account
 function showModalAccountValidation(block) {
 
     let html = `
