@@ -1,4 +1,4 @@
-// TODO : Next step => Update msg when you are level 2
+// TODO :
 // + Test back from step 0
 // + Create my Guzis
 // + Payment then
@@ -39,12 +39,12 @@ async function loadBlockchain() {
     const blockchain = await localforage.getItem('guzi-blockchain');
     return $.extend(blockchain, {
         getLevel : function() { 
-            return Math.floor(Math.cbrt(this[0].t));
+            return Math.floor(Math.cbrt(this[0].t)) + 1;
         },
 
         getGuzisBeforeNextLevel: function() {
             const level = this.getLevel();
-            return Math.pow(level+1, 3) - this[0].t;
+            return Math.pow(level, 3) - this[0].t;
         }
     });
 }
