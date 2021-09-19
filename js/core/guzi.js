@@ -36,7 +36,17 @@ function saveBlockchain(bc) {
  * Return the blockchain locally saved
  */
 async function loadBlockchain() {
-    return await localforage.getItem('guzi-blockchain');
+    const blockchain = await localforage.getItem('guzi-blockchain');
+    return $.extend(blockchain, {
+        getLevel : function() { 
+            return Math.floor(Math.cbrt(this[0].t));
+        },
+
+        getGuzisBeforeNextLevel: function() {
+            const level = this.getLevel();
+            return Math.pow(level+1, 3) - this[0].t;
+        }
+    });
 }
 
 function cypherAndSavePrivateKey(keypair, pwd) {
@@ -159,32 +169,36 @@ function updateContacts() {
     });
 }
 
-function updatePage() {
-    loadBlockchain().then(blockchain => {
-        if (blockchain === null) {
-            $("#guziInformationsButton").show();
-            $("#newAccountButton").show();
-            $("#sendAccountButton").hide();
-            $("#createMyGuzisButton").prop("disabled", true);
-            $("#importValidatedAccountButton").hide();
-            $("#importPaymentButton").prop("disabled", true);
-        } else if (blockchain.length === 1) {
-            $("#guziInformationsButton").show();
-            $("#newAccountButton").hide();
-            $("#sendAccountButton").show();
-            $("#createMyGuzisButton").prop("disabled", true);
-            $("#importValidatedAccountButton").show();
-            $("#importPaymentButton").prop("disabled", true);
-        } else {
-            // Not new user : hide account creation
-            $("#guziInformationsButton").hide();
-            $("#newAccountButton").hide();
-            $("#sendAccountButton").hide();
-            $("#createMyGuzisButton").prop("disabled", false);
-            $("#importValidatedAccountButton").hide();
-            $("#importPaymentButton").prop("disabled", false);
-        }
-    });
+async function updatePage() {
+    blockchain = await loadBlockchain();
+    if (blockchain === null) {
+        $("#guziInformationsButton").show();
+        $("#newAccountButton").show();
+        $("#sendAccountButton").hide();
+        $("#createMyGuzisButton").prop("disabled", true);
+        $("#importValidatedAccountButton").hide();
+        $("#importPaymentButton").prop("disabled", true);
+        $("#guzi-account-info").html("Vous êtes actuellement niveau 0. Vous devez créer un compte pour passer niveau 1.");
+    } else if (blockchain.length === 1) {
+        $("#guziInformationsButton").show();
+        $("#newAccountButton").hide();
+        $("#sendAccountButton").show();
+        $("#createMyGuzisButton").prop("disabled", true);
+        $("#importValidatedAccountButton").show();
+        $("#importPaymentButton").prop("disabled", true);
+        $("#guzi-account-info").html("Vous êtes actuellement niveau 0,5. Vous devez faire valider votre compte pour passer niveau 1.");
+    } else {
+        // Not new user : hide account creation
+        $("#guziInformationsButton").hide();
+        $("#newAccountButton").hide();
+        $("#sendAccountButton").hide();
+        $("#createMyGuzisButton").prop("disabled", false);
+        $("#importValidatedAccountButton").hide();
+        $("#importPaymentButton").prop("disabled", false);
+        const level = blockchain.getLevel();
+        const guzisBeforeNextLevel = blockchain.getGuzisBeforeNextLevel();
+        $("#guzi-account-info").html(`Niveau ${level}. ${guzisBeforeNextLevel} Guzis pour atteindre le niveau ${level+1}.`);
+    }
 }
 
 function addContactFromModal() {
@@ -208,7 +222,7 @@ function addContact(name, email, key) {
     });
 }
 
-function importData(data, modal) {
+async function importData(data, modal) {
     // TODO
     // - Detect if it's a block
     // - Detect if it's a blockchain
