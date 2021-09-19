@@ -1,7 +1,3 @@
-// TODO :
-// + Test back from step 0
-// + Create my Guzis
-// + Payment then
 async function createAccountFromModal() {
     const birthdate = document.getElementById("new-account-modal-birthdate").value;
     const pwd = document.getElementById("new-account-modal-password").value;
@@ -59,7 +55,6 @@ function cypherAndSavePrivateKey(keypair, pwd) {
     });
 }
 
-// TODO : find a way to handle wrong password
 function askPwdAndLoadPrivateKey(callback) {
     $("#pwdValidation").on("click", async () => {
         const pwd = $("#pwdPrompt").val();
@@ -146,7 +141,6 @@ async function signblock(block, key) {
     return block;
 }
 
-// TODO : use messagepack and create hashes
 function makeTx(type, target, amount) {
     let tx = {v: 1, t: type, d: Date.now(), t: target, a: amount, h: null};
 }
@@ -223,10 +217,6 @@ function addContact(name, email, key) {
 }
 
 async function importData(data, modal) {
-    // TODO
-    // - Detect if it's a block
-    // - Detect if it's a blockchain
-    // - if it's a payment
     data = data.replace(/\s/g, '');
     jsondata = hexToJson(data);
     console.log(jsondata);

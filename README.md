@@ -39,7 +39,14 @@ Then open 127.0.0.1/tests.html
 2. [X] Save encoded private key with given password
 3. [X] Save Blockchain localy
 4. [X] Send an account creation request
-5. [ ] Create a payment
-6. [ ] Send a payment
-7. [ ] Open and accept/reject account creation request
-8. [ ] Open and accept/reject payment
+5. [ ] Test it all back to step 0
+6. [ ] Remove useless part (Guzis availables) for level 0 user
+7. [ ] Add 1/2 xp for account validation waiting
+8. [ ] Create my Guzis
+9. [ ] Create a payment
+10. [ ] Send a payment
+11. [ ] Open and accept/reject account creation request
+12. [ ] Open and accept/reject payment
+13. [ ] Add wrong password handling in askPwdAndLoadPrivateKey function
+14. [ ] Re-do makeTx method
+15. [ ] importData : handle block, blockchain or payment
