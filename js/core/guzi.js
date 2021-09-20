@@ -30,18 +30,29 @@ function saveBlockchain(bc) {
 
 /**
  * Return the blockchain locally saved
+ * completed with some usefull methods
  */
 async function loadBlockchain() {
     const blockchain = await localforage.getItem('guzi-blockchain');
-    return $.extend(blockchain, {
+    return basicBlockchainToObject(blockchain);
+}
+
+function basicBlockchainToObject(basicBC) {
+    return $.extend(basicBC, {
         getLevel : function() { 
+            if (! this.isCreated()) { return 0; }
             return Math.floor(Math.cbrt(this[0].t)) + 1;
         },
 
         getGuzisBeforeNextLevel: function() {
+            if (! this.isCreated()) { return 0; }
             const level = this.getLevel();
             return Math.pow(level, 3) - this[0].t;
-        }
+        },
+
+        isCreated: function() {
+            return this.length !== undefined && this.length > 0;
+        },
     });
 }
 

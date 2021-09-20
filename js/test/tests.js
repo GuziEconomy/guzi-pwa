@@ -203,7 +203,7 @@ QUnit.module('validateAccount', () => {
 })
 
 QUnit.module('updateBlockchain', () => {
-    QUnit.test("Should return the new blockchain if it's ok", async (assert) => {
+    QUnit.test("Should return the new blockchain if it's ok", (assert) => {
         const oldBC = [];
         const newBC = [validBirthBlock];
         const result = updateBlockchain(oldBC, newBC);
@@ -211,7 +211,7 @@ QUnit.module('updateBlockchain', () => {
         assert.equal(result, newBC);
     })
 
-    QUnit.test("Should raise error if new does not start old", async (assert) => {
+    QUnit.test("Should raise error if new does not start old", (assert) => {
         const oldBC = [validBirthBlock];
         const newBC = [];
 
@@ -223,7 +223,7 @@ QUnit.module('updateBlockchain', () => {
         );
     })
 
-    QUnit.test("Should raise error if new does not start old (long bc)", async (assert) => {
+    QUnit.test("Should raise error if new does not start old (long bc)", (assert) => {
 
         const oldBC = [validBirthBlock, validBirthBlock, validBirthBlock, validBirthBlock];
         const newBC = [validBirthBlock, validBirthBlock, validBirthBlock];
@@ -236,9 +236,45 @@ QUnit.module('updateBlockchain', () => {
         );
     })
 
-    QUnit.test("Should be OK to replace blockchain by itself", async (assert) => {
+    QUnit.test("Should be OK to replace blockchain by itself", (assert) => {
         const bc = [validBirthBlock, validBirthBlock, validBirthBlock, validBirthBlock];
         const result = updateBlockchain(bc, bc);
         assert.equal(result, bc);
+    })
+})
+
+QUnit.module('blockchain', () => {
+    QUnit.module('getLevel', () => {
+        QUnit.test("Should return 0 for empty blockchain", (assert) => {
+            const bc = basicBlockchainToObject();
+            const result = bc.getLevel();
+
+            assert.equal(result, 0);
+        })
+    })
+
+    QUnit.module('getGuzisBeforeNextLevel', () => {
+        QUnit.test("Should return 0 for empty blockchain", (assert) => {
+            const bc = basicBlockchainToObject();
+            const result = bc.getGuzisBeforeNextLevel();
+
+            assert.equal(result, 0);
+        })
+    })
+
+    QUnit.module('isCreated', () => {
+        QUnit.test("Should return false for empty blockchain", (assert) => {
+            const bc = basicBlockchainToObject();
+            const result = bc.isCreated();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return true for valid blockchain", (assert) => {
+            const bc = basicBlockchainToObject([validBirthBlock]);
+            const result = bc.isCreated();
+
+            assert.true(result);
+        })
     })
 })
