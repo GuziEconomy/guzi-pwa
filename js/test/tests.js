@@ -16,8 +16,19 @@ const validBirthBlock = {
     d: "28/11/1989",
     g: 0,
     h: "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
-    ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+    ph: REF_HASH,
     s: "02e31267fc0e24e6a3da9e40fedb23f98c750bddb3278a1873ab49c601f3bbd66b",
+    t: 0,
+    v: 1
+}
+
+const validInitBlock = {
+    b: 0,
+    d: "21/09/2021",
+    g: 0,
+    h: "3046022100a6187497626c9e8296000ec1a1e7e5dae59cf3e8d7b1bc327aa83ff7e9242194022100af10330df50bb1ee6d439e342bde781fef7204af766195ba5ffa5111d9527200",
+    ph: "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
+    s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
     t: 0,
     v: 1
 }
@@ -32,7 +43,7 @@ QUnit.module('makeBirthBlock', () => {
         const expected = {
             v: 1,
             d: birthdate,
-            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+            ph: REF_HASH,
             s: publicHexKey,
             g: 0, b: 0, t: 0,
         }
@@ -47,7 +58,7 @@ QUnit.module('hashblock', () => {
         const block = {
             v: 1,
             d: "28/11/1989",
-            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+            ph: REF_HASH,
             s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
             g: 0, b: 0, t: 0,
         };
@@ -65,7 +76,7 @@ QUnit.module('signblock', () => {
         const block = {
             v: 1,
             d: "28/11/1989",
-            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+            ph: REF_HASH,
             s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
             g: 0, b: 0, t: 0,
         };
@@ -73,7 +84,7 @@ QUnit.module('signblock', () => {
         const expected = {
             v: 1,
             d: "28/11/1989",
-            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+            ph: REF_HASH,
             s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
             g: 0, b: 0, t: 0,
             // h: "cd46dbbf4deef70d7519f3e5dc825311bd0935c958571f87e399a860d1aac5cd",
@@ -91,7 +102,7 @@ QUnit.module('exportToHex', () => {
         const block = {
             v: 1,
             d: "28/11/1989",
-            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+            ph: REF_HASH,
             s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
             g: 0, b: 0, t: 0,
             h: "3045022100fa8fa6d39457649ba21cca129ec6c3b41bb2dbb4247dd47a5491cb3567fad5d30220434ef707b7a044e05646a564445a279e4ffab7b00a9649e8a2d7fce165c3a8ad"
@@ -108,7 +119,7 @@ QUnit.module('exportToHex', () => {
         const bc = [{
             v: 1,
             d: "28/11/1989",
-            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+            ph: REF_HASH,
             s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
             g: 0, b: 0, t: 0,
             h: "3045022100fa8fa6d39457649ba21cca129ec6c3b41bb2dbb4247dd47a5491cb3567fad5d30220434ef707b7a044e05646a564445a279e4ffab7b00a9649e8a2d7fce165c3a8ad"
@@ -151,7 +162,7 @@ QUnit.module('isValidBC', () => {
         const result = isValidBC([{b: 0,
             d: "",
             g: 0,
-            ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5",
+            ph: REF_HASH,
             s: "03fd0a4bfe8b7a431576916e5a30b149027e5fb902f6f117f440a1bb43df5897b5",
             t: 0,
             v: 1}]);
@@ -263,16 +274,90 @@ QUnit.module('blockchain', () => {
     })
 
     QUnit.module('isCreated', () => {
-        QUnit.test("Should return false for empty blockchain", (assert) => {
+        QUnit.test("Should return false for null blockchain", (assert) => {
             const bc = basicBlockchainToObject();
             const result = bc.isCreated();
 
             assert.false(result);
         }),
 
-        QUnit.test("Should return true for valid blockchain", (assert) => {
+        QUnit.test("Should return false for blockchain waiting for validation", (assert) => {
             const bc = basicBlockchainToObject([validBirthBlock]);
             const result = bc.isCreated();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return true for valid blockchain", (assert) => {
+            const bc = basicBlockchainToObject([]);
+            const result = bc.isCreated();
+
+            assert.true(result);
+        })
+    })
+
+    QUnit.module('isWaitingValidation', () => {
+        QUnit.test("Should return false for empty blockchain", (assert) => {
+            const bc = basicBlockchainToObject();
+            const result = bc.isWaitingValidation();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return false for only created blockchain", (assert) => {
+            const bc = basicBlockchainToObject([]);
+            const result = bc.isWaitingValidation();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return false totally valid blockchain", (assert) => {
+            const bc = basicBlockchainToObject([validBirthBlock, validBirthBlock]);
+            const result = bc.isWaitingValidation();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return false if the block is not a birth one", (assert) => {
+            const bc = basicBlockchainToObject([validInitBlock]);
+            const result = bc.isWaitingValidation();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return true for blockchain effectively waiting for validation", (assert) => {
+            const bc = basicBlockchainToObject([validBirthBlock]);
+            const result = bc.isWaitingValidation();
+
+            assert.true(result);
+        })
+    })
+
+    QUnit.module('isValidated', () => {
+        QUnit.test("Should return false for empty blockchain", (assert) => {
+            const bc = basicBlockchainToObject();
+            const result = bc.isValidated();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return false for only created blockchain", (assert) => {
+            const bc = basicBlockchainToObject([]);
+            const result = bc.isValidated();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return false if the first block is not a birth one", (assert) => {
+            const bc = basicBlockchainToObject([validInitBlock, validInitBlock]);
+            const result = bc.isValidated();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return true totally valid blockchain", (assert) => {
+            const bc = basicBlockchainToObject([validInitBlock, validBirthBlock]);
+            const result = bc.isValidated();
 
             assert.true(result);
         })

@@ -1,3 +1,5 @@
+const REF_HASH = "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5";
+
 async function createAccountFromModal() {
     const birthdate = document.getElementById("new-account-modal-birthdate").value;
     const pwd = document.getElementById("new-account-modal-password").value;
@@ -51,8 +53,18 @@ function basicBlockchainToObject(basicBC) {
         },
 
         isCreated: function() {
-            return this.length !== undefined && this.length > 0;
+            return this.length !== undefined && this.length === 0;
         },
+
+        isWaitingValidation: function() {
+            return this.length !== undefined && this.length === 1
+                && this[0].ph === REF_HASH;
+        },
+
+        isValidated: function() {
+            return this.length !== undefined && this.length >= 2
+                && this[this.length-1].ph === REF_HASH;
+        }
     });
 }
 
@@ -124,7 +136,7 @@ function makeBirthBlock(birthdate, publicHexKey) {
     return {
         v: 1, // Version
         d: birthdate, // User birth date
-        ph: "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5", // Previous hash : here "random"
+        ph: REF_HASH, // Previous hash : here "random"
         s: publicHexKey, // Compressed Signer public key, here the new one created
         g: 0, b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
     }
@@ -176,7 +188,7 @@ function updateContacts() {
 
 async function updatePage() {
     blockchain = await loadBlockchain();
-    if (blockchain === null) {
+    if (! blockchain.isCreated()) {
         $("#guziInformationsButton").show();
         $("#newAccountButton").show();
         $("#sendAccountButton").hide();
@@ -184,7 +196,7 @@ async function updatePage() {
         $("#importValidatedAccountButton").hide();
         $("#importPaymentButton").prop("disabled", true);
         $("#guzi-account-info").html("Vous êtes actuellement niveau 0. Vous devez créer un compte pour passer niveau 1.");
-    } else if (blockchain.length === 1) {
+    } else if (blockchain.isWaitingValidation()) {
         $("#guziInformationsButton").show();
         $("#newAccountButton").hide();
         $("#sendAccountButton").show();
@@ -192,8 +204,7 @@ async function updatePage() {
         $("#importValidatedAccountButton").show();
         $("#importPaymentButton").prop("disabled", true);
         $("#guzi-account-info").html("Vous êtes actuellement niveau 0,5. Vous devez faire valider votre compte pour passer niveau 1.");
-    } else {
-        // Not new user : hide account creation
+    } else if (blockchain.isValidated()) {
         $("#guziInformationsButton").hide();
         $("#newAccountButton").hide();
         $("#sendAccountButton").hide();
@@ -281,7 +292,7 @@ function isValidInitializationBlock(block) {
     const ec = new elliptic.ec('secp256k1');
     const key = ec.keyFromPublic(block.s, 'hex');
     console.log(key);
-    return block.ph === "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5"
+    return block.ph === REF_HASH
         && block.v === 1
         && block.g === 0
         && block.b === 0
