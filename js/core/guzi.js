@@ -51,6 +51,10 @@ function basicBlockchainToObject(basicBC) {
             return Math.pow(level, 3) - this[0].t;
         },
 
+        getGuzis: function() {
+            return 0;
+        },
+
         isEmpty: function() {
             return this.length === undefined;
         },
@@ -201,12 +205,15 @@ async function updatePage() {
         $("#sendAccountButton").show();
         $("#importValidatedAccountButton").show();
         $("#guzi-account-info").html("Vous devez faire valider votre compte pour passer niveau 1.");
+        $("#accountStatusSection .progress-bar").attr("aria-valuenow", "50");
+        $("#accountStatusSection .progress-bar").attr("style", "width: 50%");
+        $("#accountStatusSection .progress-bar").html("Compte à valider");
     } else if (blockchain.isValidated()) {
         $("#guziSection").show();
         $("#contactSection").show();
         const level = blockchain.getLevel();
-        const guzisBeforeNextLevel = blockchain.getGuzisBeforeNextLevel();
-        $("#guzi-account-info").html(`Niveau ${level}. ${guzisBeforeNextLevel} Guzis pour atteindre le niveau ${level+1}.`);
+        $("#guzi-account-info").html(`Niveau ${level}. ${blockchain.getGuzisBeforeNextLevel()} Guzis pour atteindre le niveau ${level+1}.`);
+        $("#guziAvailableAmount").html(`Guzis disponibles : ${blockchain.getGuzis()}`);
     }
 }
 
