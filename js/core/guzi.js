@@ -52,7 +52,10 @@ function basicBlockchainToObject(basicBC) {
         },
 
         getGuzis: function() {
-            return 0;
+            if (this.isEmpty() || this.isCreated() || this.isWaitingValidation()) {
+                return 0;
+            }
+            return this[0].g;
         },
 
         isEmpty: function() {

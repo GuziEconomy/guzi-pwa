@@ -273,6 +273,37 @@ QUnit.module('blockchain', () => {
         })
     })
 
+    QUnit.module('getGuzis', () => {
+        QUnit.test("Should return 0 for empty blockchain", (assert) => {
+            const bc = basicBlockchainToObject();
+            const result = bc.getGuzis();
+
+            assert.equal(result, 0);
+        })
+
+        QUnit.test("Should return 0 for created blockchain", (assert) => {
+            const bc = basicBlockchainToObject([]);
+            const result = bc.getGuzis();
+
+            assert.equal(result, 0);
+        })
+
+        QUnit.test("Should return 0 for validation waiting blockchain", (assert) => {
+            const bc = basicBlockchainToObject([validBirthBlock]);
+            const result = bc.getGuzis();
+
+            assert.equal(result, 0);
+        })
+
+        QUnit.test("Should return last block g for valid blockchain", (assert) => {
+            const bc = basicBlockchainToObject([validInitBlock, validBirthBlock]);
+            bc[0].g = 3;
+            const result = bc.getGuzis();
+
+            assert.equal(result, 3);
+        })
+    })
+
     QUnit.module('isEmpty', () => {
         QUnit.test("Should return false for empty array", (assert) => {
             const bc = basicBlockchainToObject([]);
