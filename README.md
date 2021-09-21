@@ -41,7 +41,7 @@ Then open 127.0.0.1/tests.html
 4. [X] Send an account creation request
 5. [X] Create testable function for extend part of "loadBlockchain"
 6. [X] Test it with no blockchain (should return 0)
-7. [ ] Change page update : everything should be hidden in the first place
+7. [X] Change page update : everything should be hidden in the first place
 8. [ ] Test it all back to step 0
 9. [ ] Remove useless part (Guzis availables) for level 0 user
 10. [ ] Add 1/2 xp for account validation waiting

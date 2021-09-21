@@ -78,78 +78,84 @@
             <div class="row">
                 <div class="col">
                     <h1 class="title">Le Guzi</h1>
-                    <div class="row">
-                        <div class="col">
-                            <h2> Niveau </h2>
-                        </div>
-                        <div class="col-12 col-md-auto">
-                            <button id="guziInformationsButton" class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#guziInformationsModal">
-                                Plus d'informations
-                            </button>
-                            <button id="newAccountButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newAccountModal">
-                                Créer mon compte
-                            </button>
-                            <button id="sendAccountButton" class="btn btn-secondary" type="button" onclick="sendBlockchain()">
-                                Envoyer ma chaine à un référent
-                            </button>
-                            <button id="importValidatedAccountButton" class="btn btn-secondary" type="button" onclick="showModalImport()">
-                                Importer mon compte validé
-                            </button>
-                        </div>
-                    </div>
-                    <p id="guzi-account-info">
-                    </p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Niveau 0</div>
-                    </div>
-
-                    <p></p>
-
-                    <div class="row">
-                        <div class="col">
-                            <h2> Guzis disponibles </h2>
-                        </div>
-                        <div class="col-12 col-md-auto">
-                            <button id="importPaymentButton" class="btn btn-primary" type="button" onclick="showModalImport()">
-                                Importer demande/paiement
-                            </button>
-                            <button id="createMyGuzisButton" class="btn btn-secondary" type="button">
-                                Créer mes Guzis
-                            </button>
-                        </div>
-                        <p></p>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0</div>
-                    </div>
-
-                    <p></p>
-
-                    <div class="row">
-                        <div class="col">
-                            <h2> Contacts </h2>
-                        </div>
-                        <div class="col-12 col-md-auto">
-                            <div class="btn-group-vertical">
-                                <button id="newContactButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">
-                                    Nouveau contact
+                    <div id="accountStatusSection">
+                        <div class="row">
+                            <div class="col">
+                                <h2> Niveau </h2>
+                            </div>
+                            <div class="col-12 col-md-auto">
+                                <button id="guziInformationsButton" class="btn btn-primary basically-hidden" type="button" data-bs-toggle="modal" data-bs-target="#guziInformationsModal">
+                                    Plus d'informations
+                                </button>
+                                <button id="newAccountButton" class="btn btn-secondary basically-hidden" type="button" data-bs-toggle="modal" data-bs-target="#newAccountModal">
+                                    Créer mon compte
+                                </button>
+                                <button id="sendAccountButton" class="btn btn-secondary basically-hidden" type="button" onclick="sendBlockchain()">
+                                    Envoyer ma chaine à un référent
+                                </button>
+                                <button id="importValidatedAccountButton" class="btn btn-secondary basically-hidden" type="button" onclick="showModalImport()">
+                                    Importer mon compte validé
                                 </button>
                             </div>
                         </div>
+                        <p id="guzi-account-info">
+                        </p>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Niveau 0</div>
+                        </div>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Nom</th>
-                                        <th scope="col">Email</th>
-                                        <th scope="col">Payer</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="contact-list">
-                                </tbody>
-                            </table>
+
+                    <p></p>
+
+                    <div id="guziSection" class="basically-hidden">
+                        <div class="row">
+                            <div class="col">
+                                <h2> Guzis disponibles </h2>
+                            </div>
+                            <div class="col-12 col-md-auto">
+                                <button id="importPaymentButton" class="btn btn-primary" type="button" onclick="showModalImport()">
+                                    Importer demande/paiement
+                                </button>
+                                <button id="createMyGuzisButton" class="btn btn-secondary" type="button">
+                                    Créer mes Guzis
+                                </button>
+                            </div>
+                            <p></p>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0</div>
+                        </div>
+                    </div>
+
+                    <p></p>
+
+                    <div id="contactSection" class="basically-hidden">
+                        <div class="row">
+                            <div class="col">
+                                <h2> Contacts </h2>
+                            </div>
+                            <div class="col-12 col-md-auto">
+                                <div class="btn-group-vertical">
+                                    <button id="newContactButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">
+                                        Nouveau contact
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Nom</th>
+                                            <th scope="col">Email</th>
+                                            <th scope="col">Payer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="contact-list">
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

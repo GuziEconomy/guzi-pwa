@@ -15,10 +15,9 @@ async function createAccountFromModal() {
     let birthblock = makeBirthBlock(birthdate, keypair.getPublic(true, 'hex'));
     birthblock = await signblock(birthblock, keypair);
     cypherAndSavePrivateKey(keypair, pwd);
-    saveBlockchain([birthblock]).then(() => {
-        updatePage();
-        $("#newAccountModal").modal("hide")
-    });
+    await saveBlockchain([birthblock]);
+    updatePage();
+    $("#newAccountModal").modal("hide");
 }
 
 function saveBlockchain(bc) {
@@ -52,17 +51,21 @@ function basicBlockchainToObject(basicBC) {
             return Math.pow(level, 3) - this[0].t;
         },
 
+        isEmpty: function() {
+            return this.length === undefined;
+        },
+
         isCreated: function() {
-            return this.length !== undefined && this.length === 0;
+            return !this.isEmpty() && this.length === 0;
         },
 
         isWaitingValidation: function() {
-            return this.length !== undefined && this.length === 1
+            return !this.isEmpty() && this.length === 1
                 && this[0].ph === REF_HASH;
         },
 
         isValidated: function() {
-            return this.length !== undefined && this.length >= 2
+            return !this.isEmpty() && this.length >= 2
                 && this[this.length-1].ph === REF_HASH;
         }
     });
@@ -187,30 +190,20 @@ function updateContacts() {
 }
 
 async function updatePage() {
+    $(".basically-hidden").hide();
     blockchain = await loadBlockchain();
-    if (! blockchain.isCreated()) {
+    if (blockchain.isEmpty()) {
         $("#guziInformationsButton").show();
         $("#newAccountButton").show();
-        $("#sendAccountButton").hide();
-        $("#createMyGuzisButton").prop("disabled", true);
-        $("#importValidatedAccountButton").hide();
-        $("#importPaymentButton").prop("disabled", true);
         $("#guzi-account-info").html("Vous êtes actuellement niveau 0. Vous devez créer un compte pour passer niveau 1.");
     } else if (blockchain.isWaitingValidation()) {
         $("#guziInformationsButton").show();
-        $("#newAccountButton").hide();
         $("#sendAccountButton").show();
-        $("#createMyGuzisButton").prop("disabled", true);
         $("#importValidatedAccountButton").show();
-        $("#importPaymentButton").prop("disabled", true);
-        $("#guzi-account-info").html("Vous êtes actuellement niveau 0,5. Vous devez faire valider votre compte pour passer niveau 1.");
+        $("#guzi-account-info").html("Vous devez faire valider votre compte pour passer niveau 1.");
     } else if (blockchain.isValidated()) {
-        $("#guziInformationsButton").hide();
-        $("#newAccountButton").hide();
-        $("#sendAccountButton").hide();
-        $("#createMyGuzisButton").prop("disabled", false);
-        $("#importValidatedAccountButton").hide();
-        $("#importPaymentButton").prop("disabled", false);
+        $("#guziSection").show();
+        $("#contactSection").show();
         const level = blockchain.getLevel();
         const guzisBeforeNextLevel = blockchain.getGuzisBeforeNextLevel();
         $("#guzi-account-info").html(`Niveau ${level}. ${guzisBeforeNextLevel} Guzis pour atteindre le niveau ${level+1}.`);

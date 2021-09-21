@@ -273,6 +273,29 @@ QUnit.module('blockchain', () => {
         })
     })
 
+    QUnit.module('isEmpty', () => {
+        QUnit.test("Should return false for empty array", (assert) => {
+            const bc = basicBlockchainToObject([]);
+            const result = bc.isEmpty();
+
+            assert.false(result);
+        }),
+
+        QUnit.test("Should return true for empty blockchain", (assert) => {
+            const bc = basicBlockchainToObject();
+            const result = bc.isEmpty();
+
+            assert.true(result);
+        })
+
+        QUnit.test("Should return true for null blockchain", (assert) => {
+            const bc = basicBlockchainToObject(null);
+            const result = bc.isEmpty();
+
+            assert.true(result);
+        })
+    })
+
     QUnit.module('isCreated', () => {
         QUnit.test("Should return false for null blockchain", (assert) => {
             const bc = basicBlockchainToObject();
