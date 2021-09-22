@@ -11,30 +11,34 @@ const keypair = ec.keyFromPrivate("ed945716dddb7af2c9774939e9946f1fee31f5ec0a3c6
 // "pub": "03cbe4edbfbbc99dfbae83e8c591fafdd6a82d61589be6f60775e3fe2a4677ef46")
 const keypair2 = ec.keyFromPrivate("e68955130b2c4adc6165b0bae6e6b8f4bcce1879dbf0c6f91b3acc69479ef272", "hex");
 
-const validBirthBlock = {
-    b: 0,
-    d: "28/11/1989",
-    g: 0,
-    h: "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
-    ph: REF_HASH,
-    s: "02e31267fc0e24e6a3da9e40fedb23f98c750bddb3278a1873ab49c601f3bbd66b",
-    t: 0,
-    v: 1
+const validBirthBlock = () => {
+    return {
+        b: 0,
+        d: "28/11/1989",
+        g: 0,
+        h: "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
+        ph: REF_HASH,
+        s: "02e31267fc0e24e6a3da9e40fedb23f98c750bddb3278a1873ab49c601f3bbd66b",
+        t: 0,
+        v: 1
+    }
 }
 
-const validInitBlock = {
-    b: 0,
-    d: "21/09/2021",
-    g: 0,
-    h: "3046022100a6187497626c9e8296000ec1a1e7e5dae59cf3e8d7b1bc327aa83ff7e9242194022100af10330df50bb1ee6d439e342bde781fef7204af766195ba5ffa5111d9527200",
-    ph: "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
-    s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
-    t: 0,
-    v: 1
+const validInitBlock = () => {
+    return {
+        b: 0,
+        d: "21/09/2021",
+        g: 0,
+        h: "3046022100a6187497626c9e8296000ec1a1e7e5dae59cf3e8d7b1bc327aa83ff7e9242194022100af10330df50bb1ee6d439e342bde781fef7204af766195ba5ffa5111d9527200",
+        ph: "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
+        s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
+        t: 0,
+        v: 1
+    }
 }
 
 const validBlockchain = () => {
-    return [validInitBlock, validBirthBlock];
+    return [validInitBlock(), validBirthBlock()];
 }
 
 QUnit.module('makeBirthBlock', () => {
@@ -229,7 +233,7 @@ QUnit.module('isValidBC', () => {
 
 QUnit.module('isValidInitializationBlock', () => {
     QUnit.test('Should return true for valid block', (assert) => {
-        const result = isValidInitializationBlock(validBirthBlock);
+        const result = isValidInitializationBlock(validBirthBlock());
 
         assert.true(result);
     })
@@ -237,19 +241,20 @@ QUnit.module('isValidInitializationBlock', () => {
 
 QUnit.module('validateAccount', () => {
     QUnit.test('Should return a 2 blocks long Blockchain', async (assert) => {
-        const result = await validateAccount(validBirthBlock, keypair2);
+        const result = await validateAccount(validBirthBlock(), keypair2);
 
         assert.equal(result.length, 2);
     })
 
     QUnit.test('Should return unmodified birth block', async (assert) => {
-        const result = await validateAccount(validBirthBlock, keypair2);
+        const bb = validBirthBlock();
+        const result = await validateAccount(bb, keypair2);
 
-        assert.equal(result[1], validBirthBlock);
+        assert.equal(result[1], bb);
     })
 
     QUnit.test('Should return a valid initialization block', async (assert) => {
-        const result = await validateAccount(validBirthBlock, keypair2);
+        const result = await validateAccount(validBirthBlock(), keypair2);
 
         assert.true(keypair2.verify(hashblock(result[0]), result[0].h));
 
@@ -272,14 +277,14 @@ QUnit.module('validateAccount', () => {
 QUnit.module('updateBlockchain', () => {
     QUnit.test("Should return the new blockchain if it's ok", (assert) => {
         const oldBC = [];
-        const newBC = [validBirthBlock];
+        const newBC = [validBirthBlock()];
         const result = updateBlockchain(oldBC, newBC);
 
         assert.equal(result, newBC);
     })
 
     QUnit.test("Should raise error if new does not start old", (assert) => {
-        const oldBC = [validBirthBlock];
+        const oldBC = [validBirthBlock()];
         const newBC = [];
 
         assert.throws(() => {
@@ -292,8 +297,8 @@ QUnit.module('updateBlockchain', () => {
 
     QUnit.test("Should raise error if new does not start old (long bc)", (assert) => {
 
-        const oldBC = [validBirthBlock, validBirthBlock, validBirthBlock, validBirthBlock];
-        const newBC = [validBirthBlock, validBirthBlock, validBirthBlock];
+        const oldBC = [validBirthBlock(), validBirthBlock(), validBirthBlock(), validBirthBlock()];
+        const newBC = [validBirthBlock(), validBirthBlock(), validBirthBlock()];
 
         assert.throws(() => {
                 updateBlockchain(oldBC, newBC)
@@ -304,7 +309,7 @@ QUnit.module('updateBlockchain', () => {
     })
 
     QUnit.test("Should be OK to replace blockchain by itself", (assert) => {
-        const bc = [validBirthBlock, validBirthBlock, validBirthBlock, validBirthBlock];
+        const bc = [validBirthBlock(), validBirthBlock(), validBirthBlock(), validBirthBlock()];
         const result = updateBlockchain(bc, bc);
         assert.equal(result, bc);
     })
@@ -345,14 +350,14 @@ QUnit.module('blockchain', () => {
         })
 
         QUnit.test("Should return 0 for validation waiting blockchain", (assert) => {
-            const bc = basicBlockchainToObject([validBirthBlock]);
+            const bc = basicBlockchainToObject([validBirthBlock()]);
             const result = bc.getGuzis();
 
             assert.equal(result, 0);
         })
 
         QUnit.test("Should return last block g for valid blockchain", (assert) => {
-            const bc = basicBlockchainToObject([validInitBlock, validBirthBlock]);
+            const bc = basicBlockchainToObject([validInitBlock(), validBirthBlock()]);
             bc[0].g = 3;
             const result = bc.getGuzis();
 
@@ -392,7 +397,7 @@ QUnit.module('blockchain', () => {
         }),
 
         QUnit.test("Should return false for blockchain waiting for validation", (assert) => {
-            const bc = basicBlockchainToObject([validBirthBlock]);
+            const bc = basicBlockchainToObject([validBirthBlock()]);
             const result = bc.isCreated();
 
             assert.false(result);
@@ -422,21 +427,21 @@ QUnit.module('blockchain', () => {
         }),
 
         QUnit.test("Should return false totally valid blockchain", (assert) => {
-            const bc = basicBlockchainToObject([validBirthBlock, validBirthBlock]);
+            const bc = basicBlockchainToObject([validBirthBlock(), validBirthBlock()]);
             const result = bc.isWaitingValidation();
 
             assert.false(result);
         }),
 
         QUnit.test("Should return false if the block is not a birth one", (assert) => {
-            const bc = basicBlockchainToObject([validInitBlock]);
+            const bc = basicBlockchainToObject([validInitBlock()]);
             const result = bc.isWaitingValidation();
 
             assert.false(result);
         }),
 
         QUnit.test("Should return true for blockchain effectively waiting for validation", (assert) => {
-            const bc = basicBlockchainToObject([validBirthBlock]);
+            const bc = basicBlockchainToObject([validBirthBlock()]);
             const result = bc.isWaitingValidation();
 
             assert.true(result);
@@ -459,14 +464,14 @@ QUnit.module('blockchain', () => {
         }),
 
         QUnit.test("Should return false if the first block is not a birth one", (assert) => {
-            const bc = basicBlockchainToObject([validInitBlock, validInitBlock]);
+            const bc = basicBlockchainToObject([validInitBlock(), validInitBlock()]);
             const result = bc.isValidated();
 
             assert.false(result);
         }),
 
         QUnit.test("Should return true totally valid blockchain", (assert) => {
-            const bc = basicBlockchainToObject([validInitBlock, validBirthBlock]);
+            const bc = basicBlockchainToObject([validInitBlock(), validBirthBlock()]);
             const result = bc.isValidated();
 
             assert.true(result);
@@ -498,6 +503,15 @@ QUnit.module('blockchain', () => {
             }
 
             assert.deepEqual(result, expected);
+        })
+    })
+
+    QUnit.module('addTx', () => {
+        QUnit.test("Should update g of the block for tx of type 0 (guzi creation).", async (assert) => {
+            const bc = basicBlockchainToObject(validBlockchain());
+            await bc.createDailyGuzis(keypair);
+
+            assert.equal(bc[0].g, 1);
         })
     })
 })

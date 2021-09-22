@@ -99,6 +99,7 @@ function basicBlockchainToObject(basicBC) {
             if (this[0].s !== undefined) {
                 this.newBlock();
             }
+            this[0].g += tx.a;
             this[0].tx.push(tx);
         },
 
