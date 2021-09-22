@@ -1,7 +1,10 @@
 const REF_HASH = "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5";
+const CUR_VERSION = 1;
 
 async function createAccountFromModal() {
-    const birthdate = document.getElementById("new-account-modal-birthdate").value;
+    let birthdate = document.getElementById("new-account-modal-birthdate").value;
+    // DD/MM/YYYY to YYYY-MM-DD
+    birthdate = birthdate.slice(6,4) + "-" + birthdate.slice(3,2) + "-" + birthdate.slice(0,2)
     const pwd = document.getElementById("new-account-modal-password").value;
     const pwd_conf = document.getElementById("new-account-modal-password-confirmation").value;
     if (pwd !== pwd_conf) {
@@ -74,6 +77,56 @@ function basicBlockchainToObject(basicBC) {
         isValidated: function() {
             return !this.isEmpty() && this.length >= 2
                 && this[this.length-1].ph === REF_HASH;
+        },
+
+        createDailyGuzis: async function(key) {
+            if (this.hasCreatedGuzisToday()) {
+                return null;
+            }
+            let tx = {
+                v: CUR_VERSION,
+                t: 0,
+                d: new Date().toISOString().slice(0, 10),
+                s: this[this.length-1].s,
+                a: 1
+            };
+            tx = await signtx(tx, key);
+            this.addTx(tx);
+            return tx;
+        },
+
+        addTx: function(tx) {
+            if (this[0].s !== undefined) {
+                this.newBlock();
+            }
+            this[0].tx.push(tx);
+        },
+
+        newBlock: function() {
+            this.unshift({
+                v: CUR_VERSION,
+                ph: this[0].ph,
+                g: this[0].g,
+                b: this[0].b,
+                t: this[0].t,
+                tx: []
+            });
+        },
+
+        hasCreatedGuzisToday: function() {
+            for (let i=0; i<this.length; i++) {
+                if (this[i].d !== undefined && new Date(this[i].d) < new Date()) {
+                    return false;
+                }
+                if (this[i].tx !== undefined) {
+                    for (let t=0; t<this[i].tx.length; t++) {
+                        if (this[i].tx[t].d === new Date().toISOString().slice(0, 10) && this[i].tx[t].t === 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return null;
         }
     });
 }
@@ -135,7 +188,7 @@ async function sendBlockchain(bc=-1) {
     if (bc === null) {
         showModalError("Aucune chaine de blocks détectée");
     } else {
-        console.log(bc);
+        // console.log(bc);
         const hexBc = exportBlockchain(bc);
         window.open(`mailto:test@example.com?subject=Demande de référent&body=${hexBc}`);
     }
@@ -144,7 +197,7 @@ async function sendBlockchain(bc=-1) {
 
 function makeBirthBlock(birthdate, publicHexKey) {
     return {
-        v: 1, // Version
+        v: CUR_VERSION, // Version
         d: birthdate, // User birth date
         ph: REF_HASH, // Previous hash : here "random"
         s: publicHexKey, // Compressed Signer public key, here the new one created
@@ -168,14 +221,28 @@ function hashblock(block) {
     return shaObj.getHash("HEX");
 }
 
+function hashtx(tx) {
+    const t = {}
+    for (let key in tx) {
+        t[key] = tx[key];
+    }
+    delete t.h;
+    const packedtx = msgpack.encode(t);
+    const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
+    shaObj.update(packedtx);
+    return shaObj.getHash("HEX");
+}
+
 async function signblock(block, key) {
     const hash = hashblock(block);
     block.h = key.sign(hash).toDER('hex');
     return block;
 }
 
-function makeTx(type, target, amount) {
-    let tx = {v: 1, t: type, d: Date.now(), t: target, a: amount, h: null};
+async function signtx(tx, key) {
+    const hash = hashtx(tx);
+    tx.h = key.sign(hash).toDER('hex');
+    return tx;
 }
 
 function updateContacts() {
@@ -244,20 +311,20 @@ function addContact(name, email, key) {
 async function importData(data, modal) {
     data = data.replace(/\s/g, '');
     jsondata = hexToJson(data);
-    console.log(jsondata);
+    // console.log(jsondata);
     if (! isValidBC(jsondata)) {
         showModalError("Les informations données sont invalides.");
         return false;
     }
     if (jsondata.length === 1) {
-        console.log("It's an initialization");
+        // console.log("It's an initialization");
         if (modal) {
             modal.modal("hide");
         }
         showModalAccountValidation(jsondata[0]);
         return true;
     } else if (jsondata.length === 2) {
-        console.log("It's a validated account");
+        // console.log("It's a validated account");
         if (modal) {
             modal.modal("hide");
         }
@@ -273,7 +340,7 @@ async function importData(data, modal) {
         }
         return true;
     } else if (jsondata.length > 1) {
-        console.log("It's a payment");
+        // console.log("It's a payment");
         return true;
     }
 }
@@ -294,7 +361,7 @@ function isValidBC(blockchain) {
 function isValidInitializationBlock(block) {
     const ec = new elliptic.ec('secp256k1');
     const key = ec.keyFromPublic(block.s, 'hex');
-    console.log(key);
+    // console.log(key);
     return block.ph === REF_HASH
         && block.v === 1
         && block.g === 0
@@ -317,7 +384,7 @@ function updateBlockchain(oldBC, newBC) {
 }
 
 function setBindings() {
-    console.log("binding done");
+    // console.log("binding done");
     $("#import-data-pasted").bind('paste', function(e) {
         importData(e.originalEvent.clipboardData.getData('text'), $("#importModal"));
     });
@@ -378,12 +445,12 @@ async function validateAccount(birthblock, key) {
 
     let initializationBlock = {
             b: 0,
-            d: new Date().toLocaleString().slice(0, 10),
+            d: new Date().toISOString().slice(0, 10),
             g: 0,
             ph: birthblock.h,
             s: key.getPublic(true, 'hex'),
             t: 0,
-            v: 1
+            v: CUR_VERSION
     }
     initializationBlock = await signblock(initializationBlock, key);
     return [initializationBlock, birthblock];

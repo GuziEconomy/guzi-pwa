@@ -33,6 +33,10 @@ const validInitBlock = {
     v: 1
 }
 
+const validBlockchain = () => {
+    return [validInitBlock, validBirthBlock];
+}
+
 QUnit.module('makeBirthBlock', () => {
     QUnit.test('Should return corectly filled block', (assert) => {
         const birthdate = "12/12/2002";
@@ -66,6 +70,58 @@ QUnit.module('hashblock', () => {
         const expected = "cd46dbbf4deef70d7519f3e5dc825311bd0935c958571f87e399a860d1aac5cd";
 
         result = hashblock(block);
+
+        assert.equal(result, expected);
+    })
+
+    QUnit.test('Should ignore existing hash', async (assert) => {
+        const block = {
+            v: 1,
+            d: "28/11/1989",
+            ph: REF_HASH,
+            s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
+            g: 0, b: 0, t: 0,
+            h: 12
+        };
+
+        const expected = "cd46dbbf4deef70d7519f3e5dc825311bd0935c958571f87e399a860d1aac5cd";
+
+        result = hashblock(block);
+
+        assert.equal(result, expected);
+    })
+})
+
+QUnit.module('hashtx', () => {
+    QUnit.test('Should make valid hash', async (assert) => {
+        const tx = {
+            v: 1,
+            t: 0,
+            d: new Date().toISOString().slice(0, 10),
+            s: "02e31267fc0e24e6a3da9e40fedb23f98c750bddb3278a1873ab49c601f3bbd66b",
+            a: 1
+        };
+
+        const expected = "9746caadf2b152b8de1c8aae027db5be92cb5205ca29ae57815f1e7a78ae9b19";
+
+        result = hashtx(tx);
+
+        assert.equal(result, expected);
+    })
+
+    QUnit.test('Should ignore existing hash', async (assert) => {
+        const tx = {
+            v: 1,
+            t: 0,
+            d: new Date().toISOString().slice(0, 10),
+            s: "02e31267fc0e24e6a3da9e40fedb23f98c750bddb3278a1873ab49c601f3bbd66b",
+            a: 1,
+            h: 12
+        };
+
+        const expected = "9746caadf2b152b8de1c8aae027db5be92cb5205ca29ae57815f1e7a78ae9b19";
+
+        result = hashtx(tx);
 
         assert.equal(result, expected);
     })
@@ -201,7 +257,7 @@ QUnit.module('validateAccount', () => {
 
         const expectedInitializationBlock = {
             b: 0,
-            d: new Date().toLocaleString().slice(0, 10),
+            d: new Date().toISOString().slice(0, 10),
             g: 0,
             ph:  "304502210090a497dff151e45648b3306eaf3005975ec180cec37ca31b91d660148938f9c7022023a36ec248bcd8762e570d36c1f7523e8fd4f8611d1d723ba994bd3ae25352ed",
             s: "03cbe4edbfbbc99dfbae83e8c591fafdd6a82d61589be6f60775e3fe2a4677ef46",
@@ -414,6 +470,34 @@ QUnit.module('blockchain', () => {
             const result = bc.isValidated();
 
             assert.true(result);
+        })
+    })
+
+    QUnit.module('createDailyGuzis', () => {
+        QUnit.test("Should return null if Guzis have already been created today.", async (assert) => {
+            const bc = basicBlockchainToObject(validBlockchain());
+            await bc.createDailyGuzis(keypair);
+            const result = await bc.createDailyGuzis(keypair);
+
+            assert.notOk(result);
+        })
+
+        QUnit.test("Should return transaction in OK case.", async (assert) => {
+            const bc = basicBlockchainToObject(validBlockchain());
+            const result = await bc.createDailyGuzis(keypair);
+
+            assert.true(keypair.verify(hashtx(result), result.h));
+            delete result.h;
+
+            const expected = {
+                v: 1,
+                t: 0,
+                d: new Date().toISOString().slice(0, 10),
+                s: "02e31267fc0e24e6a3da9e40fedb23f98c750bddb3278a1873ab49c601f3bbd66b",
+                a: 1,
+            }
+
+            assert.deepEqual(result, expected);
         })
     })
 })
