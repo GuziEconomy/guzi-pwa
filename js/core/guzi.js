@@ -1,5 +1,13 @@
 const REF_HASH = "c1a551ca1c0deea5efea51b1e1dea112ed1dea0a5150f5e11ab1e50c1a15eed5";
 const CUR_VERSION = 1;
+const MSG = {
+    VALIDATION_DEMAND: "dv",
+    VALIDATION_ACCEPT: "av",
+    PAYMENT: "p",
+    PAYMENT_REFUSED: "pr",
+    SIGN_DEMAND: "ds",
+    SIGN_ACCEPT: "as"
+}
 
 async function createAccountFromModal() {
     let birthdate = document.getElementById("new-account-modal-birthdate").value;
@@ -18,13 +26,18 @@ async function createAccountFromModal() {
     let birthblock = makeBirthBlock(birthdate, keypair.getPublic(true, 'hex'));
     birthblock = await signblock(birthblock, keypair);
     cypherAndSavePrivateKey(keypair, pwd);
-    await saveBlockchain([birthblock]);
+    await updateMyBlockchain([birthblock]);
     updatePage();
     $("#newAccountModal").modal("hide");
 }
 
 function saveBlockchain(bc) {
-    return localforage.setItem('guzi-blockchain', bc).then(() => {
+    const cleanBc = [];
+    for (let i=0; i<bc.length; i++) {
+        cleanBc[i] = bc[i];
+    }
+    const binBc = msgpack.encode(cleanBc);
+    return localforage.setItem('guzi-blockchain', binBc).then(() => {
         console.log(`Blockchain successfully saved`);
     }).catch(function(err) {
         console.error(`Error while saving Blockchain`);
@@ -37,19 +50,22 @@ function saveBlockchain(bc) {
  * completed with some usefull methods
  */
 async function loadBlockchain() {
-    const blockchain = await localforage.getItem('guzi-blockchain');
+    let blockchain = await localforage.getItem('guzi-blockchain');
+    if (blockchain !== null) {
+        blockchain = msgpack.decode(blockchain);
+    }
     return basicBlockchainToObject(blockchain);
 }
 
 function basicBlockchainToObject(basicBC) {
     return $.extend(basicBC, {
         getLevel : function() { 
-            if (! this.isCreated()) { return 0; }
+            if (! this.isCreated() && ! this.isValidated()) { return 0; }
             return Math.floor(Math.cbrt(this[0].t)) + 1;
         },
 
         getGuzisBeforeNextLevel: function() {
-            if (! this.isCreated()) { return 0; }
+            if (! this.isCreated() && ! this.isValidated()) { return 0; }
             const level = this.getLevel();
             return Math.pow(level, 3) - this[0].t;
         },
@@ -81,6 +97,7 @@ function basicBlockchainToObject(basicBC) {
 
         createDailyGuzis: async function(key) {
             if (this.hasCreatedGuzisToday()) {
+                showModalError("Guzis déjà créés aujourd'hui");
                 return null;
             }
             let tx = {
@@ -92,10 +109,12 @@ function basicBlockchainToObject(basicBC) {
             };
             tx = await signtx(tx, key);
             this.addTx(tx);
-            return tx;
+            console.log(this);
+            return this;
         },
 
         addTx: function(tx) {
+            console.log("addTx");
             if (this[0].s !== undefined) {
                 this.newBlock();
             }
@@ -104,6 +123,7 @@ function basicBlockchainToObject(basicBC) {
         },
 
         newBlock: function() {
+            console.log("newBlock");
             this.unshift({
                 v: CUR_VERSION,
                 ph: this[0].ph,
@@ -223,11 +243,13 @@ function hashblock(block) {
 }
 
 function hashtx(tx) {
-    const t = {}
-    for (let key in tx) {
-        t[key] = tx[key];
+    const t = {
+        v: tx.v,
+        t: tx.t,
+        d: tx.d,
+        s: tx.s,
+        a: tx.a
     }
-    delete t.h;
     const packedtx = msgpack.encode(t);
     const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
     shaObj.update(packedtx);
@@ -284,7 +306,17 @@ async function updatePage() {
         $("#contactSection").show();
         const level = blockchain.getLevel();
         $("#guzi-account-info").html(`Niveau ${level}. ${blockchain.getGuzisBeforeNextLevel()} Guzis pour atteindre le niveau ${level+1}.`);
-        $("#guziAvailableAmount").html(`Guzis disponibles : ${blockchain.getGuzis()}`);
+        $("#guziAvailableAmount").html(`Guzis disponibles : ${blockchain.getGuzis()}/${level*30}`);
+
+        const percent = Math.floor(blockchain.getGuzis()/(level*30)*100);
+        console.log(percent);
+        $("#guziSection .progress-bar").attr("aria-valuenow", `${percent}`);
+        $("#guziSection .progress-bar").attr("style", `width: ${percent}%`);
+        $("#guziSection .progress-bar").html("");
+
+        $("#accountStatusSection .progress-bar").attr("aria-valuenow", "0");
+        $("#accountStatusSection .progress-bar").attr("style", "width: 0%");
+        $("#accountStatusSection .progress-bar").html("");
     }
 }
 
@@ -455,4 +487,16 @@ async function validateAccount(birthblock, key) {
     }
     initializationBlock = await signblock(initializationBlock, key);
     return [initializationBlock, birthblock];
+}
+
+function createDailyGuzis() {
+    askPwdAndLoadPrivateKey(async (keypair) => {
+        let bc = await loadBlockchain();
+        bc = await bc.createDailyGuzis(keypair);
+        if (bc === null) {
+            return;
+        }
+        await updateMyBlockchain(bc);
+        updatePage();
+    });
 }

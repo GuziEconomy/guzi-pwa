@@ -45,7 +45,7 @@ Then open 127.0.0.1/tests.html
 8. [X] Test it all back to step 0
 9. [X] Remove useless part (Guzis availables) for level 0 user
 10. [X] Add 1/2 xp for account validation waiting
-11. [ ] Create my Guzis
+11. [X] Create my Guzis
 12. [ ] Create a payment
 13. [ ] Send a payment
 14. [ ] Open and accept/reject account creation request

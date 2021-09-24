@@ -106,7 +106,7 @@ QUnit.module('hashtx', () => {
             a: 1
         };
 
-        const expected = "9746caadf2b152b8de1c8aae027db5be92cb5205ca29ae57815f1e7a78ae9b19";
+        const expected = "7c2f416fb46fa773d27bb3508080560eb867650de13a98c77fe8b3eaca3c1d06";
 
         result = hashtx(tx);
 
@@ -123,7 +123,7 @@ QUnit.module('hashtx', () => {
             h: 12
         };
 
-        const expected = "9746caadf2b152b8de1c8aae027db5be92cb5205ca29ae57815f1e7a78ae9b19";
+        const expected = "7c2f416fb46fa773d27bb3508080560eb867650de13a98c77fe8b3eaca3c1d06";
 
         result = hashtx(tx);
 
@@ -487,9 +487,10 @@ QUnit.module('blockchain', () => {
             assert.notOk(result);
         })
 
-        QUnit.test("Should return transaction in OK case.", async (assert) => {
-            const bc = basicBlockchainToObject(validBlockchain());
-            const result = await bc.createDailyGuzis(keypair);
+        QUnit.test("Should return blockchain in OK case.", async (assert) => {
+            let bc = basicBlockchainToObject(validBlockchain());
+            bc = await bc.createDailyGuzis(keypair);
+            const result = bc[0].tx[0]
 
             assert.true(keypair.verify(hashtx(result), result.h));
             delete result.h;

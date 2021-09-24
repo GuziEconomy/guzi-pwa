@@ -116,7 +116,7 @@
                                 <button id="importPaymentButton" class="btn btn-primary" type="button" onclick="showModalImport()">
                                     Importer demande/paiement
                                 </button>
-                                <button id="createMyGuzisButton" class="btn btn-secondary" type="button">
+                                <button id="createMyGuzisButton" class="btn btn-secondary" type="button" onclick="createDailyGuzis()">
                                     Créer mes Guzis
                                 </button>
                             </div>
@@ -322,13 +322,13 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="newContactModalLabel"> Erreur</h5>
+                        <h5 class="modal-title" id="newContactModalLabel"> Mot de passe</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form>
                             <div class="mb-3">
-                                <input type="password" class="form-control" id="pwdPrompt" placeholder="Password">
+                                <input type="password" class="form-control" id="pwdPrompt" placeholder="Mot de passe">
                             </div>
                         </form>
                     </div>
