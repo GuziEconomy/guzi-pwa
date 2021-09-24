@@ -200,32 +200,29 @@ QUnit.module('isValidBC', () => {
         assert.false(result);
     })
 
-    QUnit.test('Should return false for empty array', (assert) => {
+    QUnit.test('Should return false for an array', (assert) => {
         const result = isValidBC([]);
 
         assert.false(result);
     })
 
-    QUnit.test('Should return false for not array (string)', (assert) => {
-        const result = isValidBC("hello world");
+    QUnit.test('Should return false for (string)', (assert) => {
+        const result = isValidBC("wtf");
 
         assert.false(result);
     })
 
-    QUnit.test('Should return false for not array (object)', (assert) => {
+    QUnit.test('Should return false for object without "t"', (assert) => {
         const result = isValidBC({});
 
         assert.false(result);
     })
 
     QUnit.test('Should return true for valid json', (assert) => {
-        const result = isValidBC([{b: 0,
-            d: "",
-            g: 0,
-            ph: REF_HASH,
-            s: "03fd0a4bfe8b7a431576916e5a30b149027e5fb902f6f117f440a1bb43df5897b5",
-            t: 0,
-            v: 1}]);
+        const result = isValidBC({
+            t: MSG.VALIDATION_DEMAND,
+            bc:[validBirthBlock()]
+        });
 
         assert.true(result);
     })

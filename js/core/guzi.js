@@ -342,37 +342,33 @@ function addContact(name, email, key) {
 }
 
 async function importData(data, modal) {
-    data = data.replace(/\s/g, '');
     jsondata = hexToJson(data);
     // console.log(jsondata);
     if (! isValidBC(jsondata)) {
         showModalError("Les informations données sont invalides.");
         return false;
     }
-    if (jsondata.length === 1) {
+    if (jsondata.t === MSG.VALIDATION_DEMAND) {
         // console.log("It's an initialization");
         if (modal) {
             modal.modal("hide");
         }
-        showModalAccountValidation(jsondata[0]);
+        showModalAccountValidation(jsondata.bc[0]);
         return true;
-    } else if (jsondata.length === 2) {
+    } else if (jsondata.t === MSG.VALIDATION_ACCEPT) {
         // console.log("It's a validated account");
-        if (modal) {
-            modal.modal("hide");
-        }
+        if (modal) { modal.modal("hide"); }
         try {
-            const blockchain = hexToJson(data);
+            const blockchain = jsondata.bc;
             await updateMyBlockchain(blockchain);
             updatePage();
-
         } catch (error) {
             showModalError("La blockchain donnée n'est pas valide");
             console.log(error);
             return false;
         }
         return true;
-    } else if (jsondata.length > 1) {
+    } else if (jsondata.t === MSG.PAYMENT) {
         // console.log("It's a payment");
         return true;
     }
@@ -382,13 +378,7 @@ async function importData(data, modal) {
  * Return true if given blockchain is valid, false else.
  */
 function isValidBC(blockchain) {
-    if (! Array.isArray(blockchain)) {
-        return false;
-    }
-    if (blockchain.length === 0) {
-        return false;
-    }
-    return true;
+    return blockchain.t !== undefined;
 }
 
 function isValidInitializationBlock(block) {
@@ -457,7 +447,10 @@ function showModalAccountValidation(block) {
             $("#accountValidationModal").modal("hide");
             askPwdAndLoadPrivateKey(async (keypair) => {
                 const bc = await validateAccount(block, keypair);
-                sendBlockchain(bc);
+                sendBlockchain({
+                    t: MSG.VALIDATION_DEMAND,
+                    bc: bc
+                });
                 $("#accountValidationModal").modal("hide");
             });
         });
