@@ -175,6 +175,7 @@ function askPwdAndLoadPrivateKey(callback) {
         const ec = new elliptic.ec('secp256k1');
         keypair = ec.keyFromPrivate(keypair.priv);
         $("#pwdModal").modal("hide");
+        $("#pwdValidation").unbind("click");
         callback(keypair);
     });
     $("#pwdModal").modal("show");
@@ -459,6 +460,7 @@ function showModalAccountValidation(block) {
             askPwdAndLoadPrivateKey(async (keypair) => {
                 const bc = await validateAccount(block, keypair);
                 sendBlockchain(MSG.VALIDATION_ACCEPT, bc);
+                $("#accountValidationButton").unbind("click");
                 $("#accountValidationModal").modal("hide");
             });
         });
