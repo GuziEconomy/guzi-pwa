@@ -119,6 +119,9 @@
                                 <button id="createMyGuzisButton" class="btn btn-secondary" type="button">
                                     Créer mes Guzis
                                 </button>
+                                <button id="paymentButton" class="btn btn-secondary" type="button">
+                                    Payer
+                                </button>
                             </div>
                             <p></p>
                         </div>
@@ -377,13 +380,15 @@
                     <div class="modal-body">
                         <form>
                             <div class="mb-3">
-                                <label for="pay-modal-target" class="form-label">Nom</label>
-                                <input type="text" class="form-control" id="pay-modal-target">
+                                <label for="pay-modal-target" class="form-label">Qui paye-t-on ?</label>
+                                <select class="form-control" id="pay-modal-target">
+                                    <option>1</option>
+                                </select>
                             </div>
-                            TODOTODO
                             <div class="mb-3">
-                                <label for="pay-modal-amount" class="form-label">Clé publique</label>
-                                <textarea class="form-control" id="pay-modal-amount" rows="3"></textarea>
+                                <label for="pay-modal-amount" class="form-label">Combien ?</label>
+                                <input type="range" class="form-control-range" min="0" max="10" id="pay-modal-amount" onInput="$('#pay-modal-amount-display').html($(this).val())">
+                                <span id="pay-modal-amount-display">0</span>
                             </div>
                         </form>
                     </div>

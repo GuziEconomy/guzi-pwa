@@ -434,6 +434,7 @@ function setBindings() {
     $("#createMyGuzisButton").on("click", createDailyGuzis);
     $("#newContactValidationButton").on("click", addContactFromModal);
     $("#newAccountValidationButton").on("click", createAccountFromModal);
+    $("#paymentButton").on("click", showPaymentModal);
 }
 
 function showModalImport() {
@@ -489,10 +490,15 @@ function showModalAccountValidation(block) {
 }
 
 async function showPaymentModal(target=null) {
-    if (target === null) {
-        const bc = await loadBlockchain();
-        target = bc[bc.length-1].s;
-    }
+    const bc = await loadBlockchain();
+    // Add contacts as option
+    const contacts = await localforage.getItem('guzi-contacts');
+    $("#pay-modal-target");
+    $("#pay-modal-amount").attr("min", 0);
+    $("#pay-modal-amount").attr("max", bc.getGuzis());
+    $("#pay-modal-amount").val(bc.getGuzis());
+    $("#pay-modal-amount-display").html(bc.getGuzis());
+    // TODO : bind valid button to pay + create pay method on blockchain
     $("#paymentModal").modal("show");
 }
 
