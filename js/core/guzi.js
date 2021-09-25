@@ -12,7 +12,7 @@ const MSG = {
 async function createAccountFromModal() {
     let birthdate = document.getElementById("new-account-modal-birthdate").value;
     // DD/MM/YYYY to YYYY-MM-DD
-    birthdate = birthdate.slice(6,4) + "-" + birthdate.slice(3,2) + "-" + birthdate.slice(0,2)
+    birthdate = birthdate.slice(6,10) + "-" + birthdate.slice(3,5) + "-" + birthdate.slice(0,2);
     const pwd = document.getElementById("new-account-modal-password").value;
     const pwd_conf = document.getElementById("new-account-modal-password-confirmation").value;
     if (pwd !== pwd_conf) {
@@ -201,7 +201,7 @@ function hexToJson(hex) {
     return msgpack.decode(bytes);
 }
 
-async function sendBlockchain(bc=-1) {
+async function sendBlockchain(type, bc=-1) {
     if (bc === -1) {
         bc = await loadBlockchain();
     }
@@ -210,8 +210,12 @@ async function sendBlockchain(bc=-1) {
         showModalError("Aucune chaine de blocks détectée");
     } else {
         // console.log(bc);
-        const hexBc = exportBlockchain(bc);
-        window.open(`mailto:test@example.com?subject=Demande de référent&body=${hexBc}`);
+        const msg = {
+            t: type,
+            bc: bc
+        }
+        const hexMsg = exportBlockchain(msg);
+        window.open(`mailto:test@example.com?subject=Demande de référent&body=${hexMsg}`);
     }
             
 }
@@ -309,7 +313,6 @@ async function updatePage() {
         $("#guziAvailableAmount").html(`Guzis disponibles : ${blockchain.getGuzis()}/${level*30}`);
 
         const percent = Math.floor(blockchain.getGuzis()/(level*30)*100);
-        console.log(percent);
         $("#guziSection .progress-bar").attr("aria-valuenow", `${percent}`);
         $("#guziSection .progress-bar").attr("style", `width: ${percent}%`);
         $("#guziSection .progress-bar").html("");
@@ -343,8 +346,9 @@ function addContact(name, email, key) {
 
 async function importData(data, modal) {
     jsondata = hexToJson(data);
-    // console.log(jsondata);
+    console.log(jsondata);
     if (! isValidBC(jsondata)) {
+        console.error(jsondata);
         showModalError("Les informations données sont invalides.");
         return false;
     }
@@ -407,10 +411,17 @@ function updateBlockchain(oldBC, newBC) {
 }
 
 function setBindings() {
-    // console.log("binding done");
     $("#import-data-pasted").bind('paste', function(e) {
         importData(e.originalEvent.clipboardData.getData('text'), $("#importModal"));
     });
+    $("#sendAccountButton").on("click", () => {
+        sendBlockchain(MSG.VALIDATION_DEMAND);
+    });
+    $("#importValidatedAccountButton").on("click", showModalImport);
+    $("#importPaymentButton").on("click", showModalImport);
+    $("#createMyGuzisButton").on("click", createDailyGuzis);
+    $("#newContactValidationButton").on("click", addContactFromModal);
+    $("#newAccountValidationButton").on("click", createAccountFromModal);
 }
 
 function showModalImport() {
@@ -431,9 +442,9 @@ function showModalAccountValidation(block) {
     <tr> <td>Guzis</td> <td>${block.g}</td></tr>
     <tr> <td>Boxes</td> <td>${block.b}</td></tr>
     <tr> <td>Total</td> <td>${block.t}</td></tr>
-    <tr> <td>Signataire</td> <td>${block.s}</td></tr>
-    <tr> <td>Hash de base</td> <td>${block.ph}</td></tr>
-    <tr> <td>Hash</td> <td>${block.h}</td></tr>`;
+    <tr> <td>Signataire</td> <td>${block.s.slice(0,8)}...</td></tr>
+    <tr> <td>Hash de base</td> <td>${block.ph.slice(0,8)}...</td></tr>
+    <tr> <td>Hash</td> <td>${block.h.slice(0,8)}...</td></tr>`;
     $("#account-validation-detail").html(html);
 
     if (isValidInitializationBlock(block)) {
@@ -447,10 +458,7 @@ function showModalAccountValidation(block) {
             $("#accountValidationModal").modal("hide");
             askPwdAndLoadPrivateKey(async (keypair) => {
                 const bc = await validateAccount(block, keypair);
-                sendBlockchain({
-                    t: MSG.VALIDATION_DEMAND,
-                    bc: bc
-                });
+                sendBlockchain(MSG.VALIDATION_ACCEPT, bc);
                 $("#accountValidationModal").modal("hide");
             });
         });

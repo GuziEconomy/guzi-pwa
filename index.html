@@ -90,10 +90,10 @@
                                 <button id="newAccountButton" class="btn btn-secondary basically-hidden" type="button" data-bs-toggle="modal" data-bs-target="#newAccountModal">
                                     Créer mon compte
                                 </button>
-                                <button id="sendAccountButton" class="btn btn-secondary basically-hidden" type="button" onclick="sendBlockchain()">
+                                <button id="sendAccountButton" class="btn btn-secondary basically-hidden" type="button">
                                     Envoyer ma chaine à un référent
                                 </button>
-                                <button id="importValidatedAccountButton" class="btn btn-secondary basically-hidden" type="button" onclick="showModalImport()">
+                                <button id="importValidatedAccountButton" class="btn btn-secondary basically-hidden" type="button">
                                     Importer mon compte validé
                                 </button>
                             </div>
@@ -113,10 +113,10 @@
                                 <h2 id="guziAvailableAmount"> Guzis disponibles</h2>
                             </div>
                             <div class="col-12 col-md-auto">
-                                <button id="importPaymentButton" class="btn btn-primary" type="button" onclick="showModalImport()">
+                                <button id="importPaymentButton" class="btn btn-primary" type="button">
                                     Importer demande/paiement
                                 </button>
-                                <button id="createMyGuzisButton" class="btn btn-secondary" type="button" onclick="createDailyGuzis()">
+                                <button id="createMyGuzisButton" class="btn btn-secondary" type="button">
                                     Créer mes Guzis
                                 </button>
                             </div>
@@ -217,7 +217,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="button" class="btn btn-primary" onclick=addContactFromModal() data-bs-dismiss="modal"> Enregistrer</button>
+                        <button id="newContactValidationButton" type="button" class="btn btn-primary" data-bs-dismiss="modal"> Enregistrer</button>
                     </div>
                 </div>
             </div>
@@ -253,7 +253,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="button" class="btn btn-primary" onclick=createAccountFromModal()> Enregistrer</button>
+                        <button id="newAccountValidationButton" type="button" class="btn btn-primary" > Enregistrer</button>
                     </div>
                 </div>
             </div>
