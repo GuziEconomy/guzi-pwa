@@ -23,11 +23,14 @@ async function createAccountFromModal() {
     var keypair = ec.genKeyPair();
 
     // Create the first block of the blockchain : the Birthday Block
-    let birthblock = makeBirthBlock(birthdate, keypair.getPublic(true, 'hex'));
+    const mypubkey = keypair.getPublic(true, 'hex');
+    let birthblock = makeBirthBlock(birthdate, mypubkey);
     birthblock = await signblock(birthblock, keypair);
     cypherAndSavePrivateKey(keypair, pwd);
     await updateMyBlockchain([birthblock]);
+    await addContact("Moi", "-", mypubkey, 0);
     updatePage();
+    updateContacts();
     $("#newAccountModal").modal("hide");
 }
 
@@ -273,22 +276,27 @@ async function signtx(tx, key) {
     return tx;
 }
 
-function updateContacts() {
-    localforage.getItem('guzi-contacts').then(contacts => {
-        let html = "";
-        if (contacts === null) { return }
-        contacts.sort().forEach((contact) => {
-            html += `<tr>
-            <td>${contact.name}</td>
-            <td>${contact.email}</td>
-            <td class="text-truncate">${contact.key.substring(0, 10)}...</td>
-                </tr>`;
-        });
-        document.getElementById("contact-list").innerHTML = html;
-    }).catch(function(err) {
-        // This code runs if there were any errors
-        console.log(err);
+async function updateContacts() {
+    const contacts = await localforage.getItem('guzi-contacts');
+    let html = "";
+    if (contacts === null) { return }
+    // Trouver mon propre contact
+    const me = contacts.find(c => c.id === 0);
+        html += `
+            <tr>
+                <td>${me.name}</td>
+                <td>${me.email}</td>
+                <td>${me.key.substring(0, 10)}...</td>
+            </tr>`;
+    contacts.filter(c=>c.id>0).sort((a,b)=>a.name>b.name).forEach((contact) => {
+        html += `
+            <tr>
+                <td>${contact.name}</td>
+                <td>${contact.email}</td>
+                <td class="text-truncate">${contact.key.substring(0, 10)}...</td>
+            </tr>`;
     });
+    document.getElementById("contact-list").innerHTML = html;
 }
 
 async function updatePage() {
@@ -332,16 +340,19 @@ function addContactFromModal() {
     );
 }
 
-function addContact(name, email, key) {
-    return localforage.getItem('guzi-contacts').then(contacts => {
-        if (contacts === null) { contacts = [] }
-        contacts.push({"name": name, "email": email, "key": key});
-        localforage.setItem('guzi-contacts', contacts).then(() => {
-            console.log(`${name} successfully saved`);
-            updateContacts();
-        }).catch(function(err) {
-            console.err(`Error while saving ${name}`);
-        });
+async function addContact(name, email, key, index=-1) {
+    contacts = await localforage.getItem('guzi-contacts');
+    if (contacts === null) {
+        contacts = []
+    } else if (index === -1) {
+        index = contacts[contacts.length-1].id + 1;
+    }
+    contacts.push({"id": index, "name": name, "email": email, "key": key});
+    localforage.setItem('guzi-contacts', contacts).then(() => {
+        console.log(`${name} successfully saved`);
+        updateContacts();
+    }).catch(function(err) {
+        console.err(`Error while saving ${name}`);
     });
 }
 
@@ -475,6 +486,14 @@ function showModalAccountValidation(block) {
     }
 
     $("#accountValidationModal").modal("show");
+}
+
+async function showPaymentModal(target=null) {
+    if (target === null) {
+        const bc = await loadBlockchain();
+        target = bc[bc.length-1].s;
+    }
+    $("#paymentModal").modal("show");
 }
 
 async function validateAccount(birthblock, key) {
