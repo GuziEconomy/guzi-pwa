@@ -9,6 +9,21 @@ const MSG = {
     SIGN_ACCEPT: "as"
 }
 
+const TXTYPE = {
+    GUZI_CREATE: 0,
+    GUZIBOX_CREATE: 1,
+    PAYMENT: 2,
+    GUZI_ENGAGEMENT: 3,
+    GUZIBOX_ENGAGEMENT: 4,
+    REFUSAL: 5,
+    OWNER_SET: 10,
+    ADMIN_SET: 11,
+    WORKER_SET: 12,
+    PAYER_SET: 13,
+    PAY_ORDER: 14,
+    LEAVE_ORDER: 15
+}
+
 async function createAccountFromModal() {
     let birthdate = document.getElementById("new-account-modal-birthdate").value;
     // DD/MM/YYYY to YYYY-MM-DD
@@ -98,31 +113,59 @@ function basicBlockchainToObject(basicBC) {
                 && this[this.length-1].ph === REF_HASH;
         },
 
-        createDailyGuzis: async function(key) {
+        createDailyGuzis: async function(key, d=null) {
             if (this.hasCreatedGuzisToday()) {
                 showModalError("Guzis déjà créés aujourd'hui");
                 return null;
             }
+            d = d || new Date().toISOString().slice(0, 10);
+            const amount = this.getLevel();
+            const gp = {};
+            gp[d] = [...Array(amount).keys()];
             let tx = {
                 v: CUR_VERSION,
-                t: 0,
-                d: new Date().toISOString().slice(0, 10),
-                s: this[this.length-1].s,
-                a: 1
+                t: TXTYPE.GUZI_CREATE,
+                d: d,
+                s: key.getPublic(true, 'hex'),
+                a: amount,
+                gp: gp
             };
             tx = await signtx(tx, key);
             this.addTx(tx);
-            console.log(this);
+            return this;
+        },
+
+        getAvailableGuzis: function() {
+            return this[0].g;
+        },
+
+        createPaymentTx: async function(key, target, amount) {
+            if (this.getGuzis() < amount) {
+                showModalError("Fonds insuffisants");
+                return null;
+            }
+            let tx = {
+                v: CUR_VERSION,
+                t: 2,
+                d: new Date().toISOString().slice(0, 10),
+                s: key.getPublic(true, 'hex'),
+                a: amount,
+                gp: this.getAvailableGuzis(amount),
+                tu: target
+            };
+            tx = await signtx(tx, key);
+            this.addTx(tx);
             return this;
         },
 
         addTx: function(tx) {
-            console.log("addTx");
             if (this[0].s !== undefined) {
                 this.newBlock();
             }
-            this[0].g += tx.a;
-            this[0].tx.push(tx);
+            if (tx.t === TXTYPE.GUZI_CREATE) {
+                this[0].g.push(tx.gc);
+            }
+            this[0].tx.unshift(tx);
         },
 
         newBlock: function() {
@@ -230,7 +273,7 @@ function makeBirthBlock(birthdate, publicHexKey) {
         d: birthdate, // User birth date
         ph: REF_HASH, // Previous hash : here "random"
         s: publicHexKey, // Compressed Signer public key, here the new one created
-        g: 0, b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
+        g: [], b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
     }
 }
 
@@ -400,10 +443,9 @@ function isValidBC(blockchain) {
 function isValidInitializationBlock(block) {
     const ec = new elliptic.ec('secp256k1');
     const key = ec.keyFromPublic(block.s, 'hex');
-    // console.log(key);
     return block.ph === REF_HASH
         && block.v === 1
-        && block.g === 0
+        && block.g.toString() == [].toString()
         && block.b === 0
         && block.t === 0
         && key.verify(hashblock(block), block.h);
@@ -490,15 +532,27 @@ function showModalAccountValidation(block) {
 }
 
 async function showPaymentModal(target=null) {
-    const bc = await loadBlockchain();
+    let bc = await loadBlockchain();
     // Add contacts as option
     const contacts = await localforage.getItem('guzi-contacts');
-    $("#pay-modal-target");
+    $("#pay-modal-target").html("");
+    contacts.forEach(c => {
+        console.log(c);
+        $('#pay-modal-target').append(new Option(c.name, c.key));
+    });
     $("#pay-modal-amount").attr("min", 0);
     $("#pay-modal-amount").attr("max", bc.getGuzis());
     $("#pay-modal-amount").val(bc.getGuzis());
     $("#pay-modal-amount-display").html(bc.getGuzis());
-    // TODO : bind valid button to pay + create pay method on blockchain
+    $("#paymentValidationButton").on("click", () => {
+        $("#paymentValidationButton").unbind("click");
+        $("#paymentModal").modal("hide");
+        // 1. Create TX. 2. Add it to BC. 3. Save BC.
+        askPwdAndLoadPrivateKey(async (keypair) => {
+            bc = bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val())
+            updateMyBlockchain(bc);
+        });
+    });
     $("#paymentModal").modal("show");
 }
 
@@ -507,10 +561,10 @@ async function validateAccount(birthblock, key) {
     let initializationBlock = {
             b: 0,
             d: new Date().toISOString().slice(0, 10),
-            g: 0,
+            g: [],
             ph: birthblock.h,
             s: key.getPublic(true, 'hex'),
-            t: 0,
+            t: TXTYPE.GUZI_CREATE,
             v: CUR_VERSION
     }
     initializationBlock = await signblock(initializationBlock, key);
@@ -518,6 +572,7 @@ async function validateAccount(birthblock, key) {
 }
 
 function createDailyGuzis() {
+    // TODO : get askPwd out and param the keypair
     askPwdAndLoadPrivateKey(async (keypair) => {
         let bc = await loadBlockchain();
         bc = await bc.createDailyGuzis(keypair);
