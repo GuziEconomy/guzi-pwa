@@ -15,8 +15,8 @@ const validBirthBlock = () => {
     return {
         b: 0,
         d: "28/11/1989",
-        g: [],
-        h: "3045022100b4057c1bcef3b706cd38d24285e33f7a9acd3e4bd0444556d08199039759de1c022045e46f3309eb2da5e1289a657d8741f5884a9ddc999ca3ddde5fc9fcfd76f5a7",
+        g: {},
+        h: "3046022100a79541ba6261790d13bfaf2d4177a0a645a3baade652bbc31daf0e2b6801300c022100de8f9ad1842e5634dd8027c1e4c90026303f201a00322df4a76e6330943702bb",
         ph: REF_HASH,
         s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
         t: 0,
@@ -28,9 +28,9 @@ const validInitBlock = () => {
     return {
         b: 0,
         d: "21/09/2021",
-        g: [],
-        h: "3045022017fea584bd103e94783f98f7b8b739e42c895e0b8ad6471c9f6ff878a1b1734d022100d965fc9d9e232c794b2370aaf9f9f6e8863f38becf730834af86da0d64e2493c",
-        ph: "3045022100b4057c1bcef3b706cd38d24285e33f7a9acd3e4bd0444556d08199039759de1c022045e46f3309eb2da5e1289a657d8741f5884a9ddc999ca3ddde5fc9fcfd76f5a7",
+        g: {},
+        h: "304502202422e7ba167cbe7289051886fd7e9a6957676cde7abba34e3f4ccfa1c7d76437022100bd824547e46638a6d70cbbbaf1f276d639bbb4354ca2461cef1c74db34542c12",
+        ph: "3046022100a79541ba6261790d13bfaf2d4177a0a645a3baade652bbc31daf0e2b6801300c022100de8f9ad1842e5634dd8027c1e4c90026303f201a00322df4a76e6330943702bb",
         s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
         t: 0,
         v: 1
@@ -53,7 +53,7 @@ QUnit.module('makeBirthBlock', () => {
             d: birthdate,
             ph: REF_HASH,
             s: publicHexKey,
-            g: [], b: 0, t: 0,
+            g: {}, b: 0, t: 0,
         }
 
         assert.deepEqual(block, expected);
@@ -68,10 +68,10 @@ QUnit.module('hashblock', () => {
             d: "28/11/1989",
             ph: REF_HASH,
             s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
-            g: [], b: 0, t: 0,
+            g: {}, b: 0, t: 0,
         };
 
-        const expected = "5c6dddea13e5f128468d7ea44079251d0bb95ed9b9cdf01211f01ed539a3d6c9";
+        const expected = "ff44d337f401ae1d4398e55f468809f7b14de2995f7d6b20aef2316a576ec19c";
 
         result = hashblock(block);
 
@@ -84,11 +84,11 @@ QUnit.module('hashblock', () => {
             d: "28/11/1989",
             ph: REF_HASH,
             s: "02c85e4e448d67a8dc724c620f3fe7d2a3a3cce9fe905b918f712396b4f8effcb3",
-            g: [], b: 0, t: 0,
+            g: {}, b: 0, t: 0,
             h: 12
         };
 
-        const expected = "5c6dddea13e5f128468d7ea44079251d0bb95ed9b9cdf01211f01ed539a3d6c9";
+        const expected = "ff44d337f401ae1d4398e55f468809f7b14de2995f7d6b20aef2316a576ec19c";
 
         result = hashblock(block);
 
@@ -260,8 +260,8 @@ QUnit.module('validateAccount', () => {
         const expectedInitializationBlock = {
             b: 0,
             d: new Date().toISOString().slice(0, 10),
-            g: [],
-            ph:  "3045022100b4057c1bcef3b706cd38d24285e33f7a9acd3e4bd0444556d08199039759de1c022045e46f3309eb2da5e1289a657d8741f5884a9ddc999ca3ddde5fc9fcfd76f5a7",
+            g: {},
+            ph:  "3046022100a79541ba6261790d13bfaf2d4177a0a645a3baade652bbc31daf0e2b6801300c022100de8f9ad1842e5634dd8027c1e4c90026303f201a00322df4a76e6330943702bb",
             s: "03cbe4edbfbbc99dfbae83e8c591fafdd6a82d61589be6f60775e3fe2a4677ef46",
             t: 0,
             v: 1
@@ -545,12 +545,10 @@ QUnit.module('blockchain', () => {
         QUnit.test("Should return each index.", async (assert) => {
             let bc = basicBlockchainToObject(validBlockchain());
             bc[0].t = 27;
-            const d = "2021-09-25";
-            bc = await bc.createDailyGuzis(keypair, d);
+            bc = await bc.createDailyGuzis(keypair, "2021-09-25");
             const result = bc.getAvailableGuzis();
 
-            const expected = {};
-            expected[d] = [0, 1, 2, 3];
+            const expected = {"2021-09-25": [0, 1, 2, 3]};
 
             assert.deepEqual(result, expected);
         })
@@ -629,21 +627,19 @@ QUnit.module('blockchain', () => {
         QUnit.test("Should make valid transaction.", async (assert) => {
             let bc = basicBlockchainToObject(validBlockchain());
             bc[0].t = 27;
-            const d = "2021-09-25";
-            bc = await bc.createDailyGuzis(keypair, d);
-            bc = await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 3);
+            bc = await bc.createDailyGuzis(keypair, "2021-09-25");
+            bc = await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 3, "2021-09-25");
             const result = bc[0].tx[0];
 
             assert.true(keypair.verify(hashtx(result), result.h));
             delete result.h;
 
-            const expectedGP = {};
-            expectedGP[d] = [0, 1, 2];
+            const expectedGP = {"2021-09-25": [0, 1, 2]};
 
             const expected = {
                 v: CUR_VERSION,
                 t: 2,
-                d: d,
+                d: "2021-09-25",
                 s: keypair.getPublic(true, 'hex'),
                 tu: keypair2.getPublic(true, 'hex'),
                 a: 3,
@@ -662,9 +658,9 @@ QUnit.module('blockchain', () => {
             bc = await bc.createDailyGuzis(keypair, d);
             const result = bc[0].g;
             const expected = {};
-            expected[d] = [0, 1, 2, 4];
+            expected[d] = [0, 1, 2, 3];
 
-            assert.equal(result, expected);
+            assert.deepEqual(result, expected);
         })
 
         QUnit.test("Should decrease g of the block for tx of type payment.", async (assert) => {
@@ -682,7 +678,7 @@ QUnit.module('blockchain', () => {
             expected[d2] = [3];
             expected[d3] = [0, 1, 2, 3];
 
-            assert.equal(result, expected);
+            assert.deepEqual(result, expected);
         })
     })
 })

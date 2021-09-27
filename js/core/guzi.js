@@ -135,19 +135,45 @@ function basicBlockchainToObject(basicBC) {
             return this;
         },
 
-        getAvailableGuzis: function() {
-            return this[0].g;
+        getAvailableGuzis: function(amount=-1) {
+            if (amount < 0) {
+                return this[0].g;
+            }
+            const result = {};
+            Object.keys(this[0].g).forEach(k => {
+                if (this[0].g[k].length <= amount) {
+                    result[k] = this[0].g[k];
+                    amount -= this[0].g[k].length;
+                } else if (amount > 0 && this[0].g[k].length > amount) {
+                    result[k] = this[0].g[k].slice(0, amount);
+                    amount = 0;
+                }
+            });
+            return result;
         },
 
-        createPaymentTx: async function(key, target, amount) {
+        removeGuzisFromAvailable: function(guzis) {
+            const result = {};
+            Object.keys(this[0].g).forEach(k => {
+                if (! guzis[k]) {
+                    result[k] = this[0].g[k];
+                } else if (guzis[k] && guzis[k].length < this[0].g[k].length) {
+                    result[k] = this[0].g[k].slice(guzis[k].length, this[0].g[k].length);
+                }
+            });
+            return result;
+        },
+
+        createPaymentTx: async function(key, target, amount, d=null) {
             if (this.getGuzis() < amount) {
                 showModalError("Fonds insuffisants");
                 return null;
             }
+            d = d || new Date().toISOString().slice(0, 10);
             let tx = {
                 v: CUR_VERSION,
                 t: 2,
-                d: new Date().toISOString().slice(0, 10),
+                d: d,
                 s: key.getPublic(true, 'hex'),
                 a: amount,
                 gp: this.getAvailableGuzis(amount),
@@ -163,7 +189,10 @@ function basicBlockchainToObject(basicBC) {
                 this.newBlock();
             }
             if (tx.t === TXTYPE.GUZI_CREATE) {
-                this[0].g.push(tx.gc);
+                this[0].g = Object.assign(this[0].g, tx.gp);
+            }
+            if (tx.t === TXTYPE.PAYMENT) {
+                this[0].g = this.removeGuzisFromAvailable(tx.gp);
             }
             this[0].tx.unshift(tx);
         },
@@ -273,7 +302,7 @@ function makeBirthBlock(birthdate, publicHexKey) {
         d: birthdate, // User birth date
         ph: REF_HASH, // Previous hash : here "random"
         s: publicHexKey, // Compressed Signer public key, here the new one created
-        g: [], b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
+        g: {}, b: 0, t: 0, // 0 guzis, 0 boxes, 0 total
     }
 }
 
@@ -445,7 +474,7 @@ function isValidInitializationBlock(block) {
     const key = ec.keyFromPublic(block.s, 'hex');
     return block.ph === REF_HASH
         && block.v === 1
-        && block.g.toString() == [].toString()
+        && JSON.stringify(block.g) === JSON.stringify({})
         && block.b === 0
         && block.t === 0
         && key.verify(hashblock(block), block.h);
@@ -561,7 +590,7 @@ async function validateAccount(birthblock, key) {
     let initializationBlock = {
             b: 0,
             d: new Date().toISOString().slice(0, 10),
-            g: [],
+            g: {},
             ph: birthblock.h,
             s: key.getPublic(true, 'hex'),
             t: TXTYPE.GUZI_CREATE,
