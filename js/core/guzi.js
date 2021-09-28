@@ -297,7 +297,7 @@ function hexToJson(hex) {
     return msgpack.decode(bytes);
 }
 
-async function sendBlockchain(type, bc=-1) {
+async function sendBlockchain(target, type, bc=-1) {
     if (bc === -1) {
         bc = await loadBlockchain();
     }
@@ -305,13 +305,12 @@ async function sendBlockchain(type, bc=-1) {
     if (bc === null) {
         showModalError("Aucune chaine de blocks détectée");
     } else {
-        // console.log(bc);
         const msg = {
             t: type,
             bc: bc
         }
         const hexMsg = exportBlockchain(msg);
-        window.open(`mailto:test@example.com?subject=Demande de référent&body=${hexMsg}`);
+        showExportModal(hexMsg,target);
     }
             
 }
@@ -523,7 +522,7 @@ function setBindings() {
         importData(e.originalEvent.clipboardData.getData('text'), $("#importModal"));
     });
     $("#sendAccountButton").on("click", () => {
-        sendBlockchain(MSG.VALIDATION_DEMAND);
+        sendBlockchain("test@example.com", MSG.VALIDATION_DEMAND);
     });
     $("#importValidatedAccountButton").on("click", showModalImport);
     $("#importPaymentButton").on("click", showModalImport);
@@ -567,7 +566,7 @@ function showModalAccountValidation(block) {
             $("#accountValidationModal").modal("hide");
             askPwdAndLoadPrivateKey(async (keypair) => {
                 const bc = await validateAccount(block, keypair);
-                sendBlockchain(MSG.VALIDATION_ACCEPT, bc);
+                sendBlockchain("test@example.com", MSG.VALIDATION_ACCEPT, bc);
                 $("#accountValidationButton").unbind("click");
                 $("#accountValidationModal").modal("hide");
             });
@@ -585,13 +584,31 @@ function showModalAccountValidation(block) {
     $("#accountValidationModal").modal("show");
 }
 
-async function showPaymentModal(target=null) {
+function showExportModal(content, target) {
+    $("#export-data-content").val(content);
+    $("#exportModalCopyButton").on("click", () => {
+        navigator.clipboard.writeText(content);
+        $("#exportModal").modal("hide");
+    });
+    $("#exportModalEmailButton").on("click", () => {
+        // TODO : change subject depending on TXTYPE
+        window.open(`mailto:${target}?subject=Demande de référent&body=${content}`);
+        $("#exportModal").modal("hide");
+    });
+    $('#exportModal').on('hidden.bs.modal', () => {
+        $("#exportModalCopyButton").unbind("click");
+        $("#exportModalEmailButton").unbind("click");
+    });
+    $("#exportModal").modal("show");
+}
+
+async function showPaymentModal() {
     let bc = await loadBlockchain();
     // Add contacts as option
     const contacts = await localforage.getItem('guzi-contacts');
+    const me = contacts.find(c => c.id === 0);
     $("#pay-modal-target").html("");
     contacts.forEach(c => {
-        console.log(c);
         $('#pay-modal-target').append(new Option(c.name, c.key));
     });
     $("#pay-modal-amount").attr("min", 0);
@@ -606,6 +623,10 @@ async function showPaymentModal(target=null) {
             bc = await bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val())
             await updateMyBlockchain(bc);
             updatePage();
+            const target = contacts.find(c => c.key === $("#pay-modal-target").val());
+            if (target.key !== me.key) {
+                sendBlockchain(target.email, TXTYPE.PAYMENT, bc);
+            }
         });
     });
     $("#paymentModal").modal("show");

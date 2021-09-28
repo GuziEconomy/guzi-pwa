@@ -46,10 +46,9 @@ Then open 127.0.0.1/tests.html
 9. [X] Remove useless part (Guzis availables) for level 0 user
 10. [X] Add 1/2 xp for account validation waiting
 11. [X] Create my Guzis
-12. [ ] Create a payment
+12. [X] Create a payment
 13. [ ] Send a payment
 14. [ ] Open and accept/reject account creation request
 15. [ ] Open and accept/reject payment
 16. [ ] Add wrong password handling in askPwdAndLoadPrivateKey function
-17. [ ] Re-do makeTx method
-18. [ ] importData : handle block, blockchain or payment
+18. [X] importData : handle block, blockchain or payment

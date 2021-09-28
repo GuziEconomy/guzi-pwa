@@ -286,6 +286,31 @@
             </div>
         </div>
 
+        <!-- Modal for any data export -->
+        <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exportModalLabel"> Envoyer</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="export-data-content" class="form-label">Contenu à envoyer</label>
+                                <textarea class="form-control" id="export-data-content" rows="5"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Annuler</button>
+                        <button id="exportModalCopyButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Copier</button>
+                        <button id="exportModalEmailButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Envoyer par mail</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal for account validation -->
         <div class="modal fade" id="accountValidationModal" tabindex="-1" aria-labelledby="accountValidationModalLabel" aria-hidden="true">
             <div class="modal-dialog">
