@@ -82,9 +82,16 @@ function basicBlockchainToObject(basicBC) {
             return Math.floor(Math.cbrt(this[0].t)) + 1;
         },
 
-        getGuzisBeforeNextLevel: function() {
+        /**
+         * If as_percent is true, return the percentage of Guzis already
+         * made before the next level.
+         */
+        getGuzisBeforeNextLevel: function(as_percent=false) {
             if (! this.isCreated() && ! this.isValidated()) { return 0; }
             const level = this.getLevel();
+            if (as_percent) {
+                return Math.floor(100*(1 - this.getGuzisBeforeNextLevel()/(Math.pow(level, 3)-Math.pow(level-1, 3))));
+            }
             return Math.pow(level, 3) - this[0].t;
         },
 
@@ -92,7 +99,12 @@ function basicBlockchainToObject(basicBC) {
             if (this.isEmpty() || this.isCreated() || this.isWaitingValidation()) {
                 return 0;
             }
-            return this[0].g;
+            let res = 0;
+            Object.keys(this[0].g).forEach(key => {
+                res += this[0].g[key].length
+            })
+
+            return res;
         },
 
         isEmpty: function() {
@@ -131,7 +143,7 @@ function basicBlockchainToObject(basicBC) {
                 gp: gp
             };
             tx = await signtx(tx, key);
-            this.addTx(tx);
+            await this.addTx(tx);
             return this;
         },
 
@@ -171,20 +183,20 @@ function basicBlockchainToObject(basicBC) {
             }
             d = d || new Date().toISOString().slice(0, 10);
             let tx = {
-                v: CUR_VERSION,
-                t: 2,
-                d: d,
-                s: key.getPublic(true, 'hex'),
                 a: amount,
+                d: d,
                 gp: this.getAvailableGuzis(amount),
-                tu: target
+                s: key.getPublic(true, 'hex'),
+                t: 2,
+                tu: target,
+                v: CUR_VERSION,
             };
             tx = await signtx(tx, key);
-            this.addTx(tx);
+            await this.addTx(tx);
             return this;
         },
 
-        addTx: function(tx) {
+        addTx: async function(tx) {
             if (this[0].s !== undefined) {
                 this.newBlock();
             }
@@ -193,12 +205,20 @@ function basicBlockchainToObject(basicBC) {
             }
             if (tx.t === TXTYPE.PAYMENT) {
                 this[0].g = this.removeGuzisFromAvailable(tx.gp);
+                const contacts = await localforage.getItem('guzi-contacts');
+                const me = contacts.find(c => c.id === 0);
+                if (tx.tu === me.key) {
+                    let toadd = 0;
+                    Object.keys(tx.gp).forEach(key => {
+                        toadd += tx.gp[key].length;
+                    })
+                    this[0].t += toadd;
+                }
             }
             this[0].tx.unshift(tx);
         },
 
         newBlock: function() {
-            console.log("newBlock");
             this.unshift({
                 v: CUR_VERSION,
                 ph: this[0].ph,
@@ -324,11 +344,13 @@ function hashblock(block) {
 
 function hashtx(tx) {
     const t = {
-        v: tx.v,
-        t: tx.t,
+        a: tx.a,
         d: tx.d,
+        gp: tx.gp,
         s: tx.s,
-        a: tx.a
+        t: tx.t,
+        tu: tx.tu,
+        v: tx.v
     }
     const packedtx = msgpack.encode(t);
     const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
@@ -390,16 +412,17 @@ async function updatePage() {
         $("#guziSection").show();
         $("#contactSection").show();
         const level = blockchain.getLevel();
-        $("#guzi-account-info").html(`Niveau ${level}. ${blockchain.getGuzisBeforeNextLevel()} Guzis pour atteindre le niveau ${level+1}.`);
-        $("#guziAvailableAmount").html(`Guzis disponibles : ${blockchain.getGuzis()}/${level*30}`);
 
-        const percent = Math.floor(blockchain.getGuzis()/(level*30)*100);
+        $("#guziAvailableAmount").html(`Guzis disponibles : ${blockchain.getGuzis()}/${level*30}`);
+        let percent = Math.floor(blockchain.getGuzis()/(level*30)*100);
         $("#guziSection .progress-bar").attr("aria-valuenow", `${percent}`);
         $("#guziSection .progress-bar").attr("style", `width: ${percent}%`);
         $("#guziSection .progress-bar").html("");
 
-        $("#accountStatusSection .progress-bar").attr("aria-valuenow", "0");
-        $("#accountStatusSection .progress-bar").attr("style", "width: 0%");
+        $("#guzi-account-info").html(`Niveau ${level}. ${blockchain.getGuzisBeforeNextLevel()} Guzis pour atteindre le niveau ${level+1}.`);
+        percent = Math.floor(blockchain.getGuzisBeforeNextLevel(true));
+        $("#accountStatusSection .progress-bar").attr("aria-valuenow", `${percent}`);
+        $("#accountStatusSection .progress-bar").attr("style", `width: ${percent}%`);
         $("#accountStatusSection .progress-bar").html("");
     }
 }
@@ -481,7 +504,9 @@ function isValidInitializationBlock(block) {
 }
 
 async function updateMyBlockchain(blockchain) {
+    console.log(blockchain);
     const oldBC = await loadBlockchain();
+    console.log(oldBC);
     const newBC = updateBlockchain(oldBC, blockchain);
     return saveBlockchain(newBC);
 }
@@ -578,8 +603,9 @@ async function showPaymentModal(target=null) {
         $("#paymentModal").modal("hide");
         // 1. Create TX. 2. Add it to BC. 3. Save BC.
         askPwdAndLoadPrivateKey(async (keypair) => {
-            bc = bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val())
-            updateMyBlockchain(bc);
+            bc = await bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val())
+            await updateMyBlockchain(bc);
+            updatePage();
         });
     });
     $("#paymentModal").modal("show");
@@ -601,7 +627,6 @@ async function validateAccount(birthblock, key) {
 }
 
 function createDailyGuzis() {
-    // TODO : get askPwd out and param the keypair
     askPwdAndLoadPrivateKey(async (keypair) => {
         let bc = await loadBlockchain();
         bc = await bc.createDailyGuzis(keypair);

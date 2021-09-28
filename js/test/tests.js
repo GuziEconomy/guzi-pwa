@@ -106,7 +106,7 @@ QUnit.module('hashtx', () => {
             a: 1
         };
 
-        const expected = "4f1b3edf644c51d5136db4f38c3b7288e96d4f0bf20a09aeb1839db91aa12358";
+        const expected = "c5a203d4341ed5e55457208b325db896a8d258811491a2e98b2544852b43dc14";
 
         result = hashtx(tx);
 
@@ -123,7 +123,7 @@ QUnit.module('hashtx', () => {
             h: 12
         };
 
-        const expected = "4f1b3edf644c51d5136db4f38c3b7288e96d4f0bf20a09aeb1839db91aa12358";
+        const expected = "c5a203d4341ed5e55457208b325db896a8d258811491a2e98b2544852b43dc14";
 
         result = hashtx(tx);
 
@@ -320,6 +320,16 @@ QUnit.module('blockchain', () => {
 
             assert.equal(result, 0);
         })
+        QUnit.test("Should return 2 for t=1 to 3", (assert) => {
+            const bc = basicBlockchainToObject(validBlockchain());
+            bc[0].t = 1;
+            assert.equal(bc.getLevel(), 2);
+            bc[0].t = 2;
+            assert.equal(bc.getLevel(), 2);
+            bc[0].t = 3;
+            assert.equal(bc.getLevel(), 2);
+
+        })
     })
 
     QUnit.module('getGuzisBeforeNextLevel', () => {
@@ -328,6 +338,24 @@ QUnit.module('blockchain', () => {
             const result = bc.getGuzisBeforeNextLevel();
 
             assert.equal(result, 0);
+        })
+
+        QUnit.test("Should return 16 for total at 11 (target is 27)", (assert) => {
+            const bc = basicBlockchainToObject(validBlockchain());
+            bc[0].t = 11;
+            const result = bc.getGuzisBeforeNextLevel();
+
+            assert.equal(result, 16);
+        })
+
+        QUnit.test("Should return percent if as_percent is true", async (assert) => {
+            let bc = basicBlockchainToObject(validBlockchain());
+            bc[0].t = 11;
+
+            const result = bc.getGuzisBeforeNextLevel(true);
+
+            //TODO
+            assert.equal(result, 15);
         })
     })
 
@@ -353,12 +381,14 @@ QUnit.module('blockchain', () => {
             assert.equal(result, 0);
         })
 
-        QUnit.test("Should return last block g for valid blockchain", (assert) => {
-            const bc = basicBlockchainToObject([validInitBlock(), validBirthBlock()]);
-            bc[0].g = 3;
+        QUnit.test("Should return last block g for valid blockchain", async (assert) => {
+            let bc = basicBlockchainToObject([validInitBlock(), validBirthBlock()]);
+            bc[0].t = 27;
+            bc = await bc.createDailyGuzis(keypair, "2021-09-25");
+            bc = await bc.createDailyGuzis(keypair, "2021-09-26");
             const result = bc.getGuzis();
 
-            assert.equal(result, 3);
+            assert.equal(result, 8);
         })
     })
 
@@ -634,16 +664,14 @@ QUnit.module('blockchain', () => {
             assert.true(keypair.verify(hashtx(result), result.h));
             delete result.h;
 
-            const expectedGP = {"2021-09-25": [0, 1, 2]};
-
             const expected = {
-                v: CUR_VERSION,
-                t: 2,
-                d: "2021-09-25",
-                s: keypair.getPublic(true, 'hex'),
-                tu: keypair2.getPublic(true, 'hex'),
                 a: 3,
-                gp: expectedGP
+                d: "2021-09-25",
+                gp: {"2021-09-25": [0, 1, 2]},
+                s: keypair.getPublic(true, 'hex'),
+                t: TXTYPE.PAYMENT,
+                tu: keypair2.getPublic(true, 'hex'),
+                v: CUR_VERSION,
             }
 
             assert.deepEqual(result, expected);
