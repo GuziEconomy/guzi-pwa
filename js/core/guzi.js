@@ -396,17 +396,9 @@ async function updatePage() {
     $(".basically-hidden").hide();
     blockchain = await loadBlockchain();
     if (blockchain.isEmpty()) {
-        $("#guziInformationsButton").show();
-        $("#newAccountButton").show();
-        $("#guzi-account-info").html("Vous êtes actuellement niveau 0. Vous devez créer un compte pour passer niveau 1.");
+        $("#landing-first-visit").show();
     } else if (blockchain.isWaitingValidation()) {
-        $("#guziInformationsButton").show();
-        $("#sendAccountButton").show();
-        $("#importValidatedAccountButton").show();
-        $("#guzi-account-info").html("Vous devez faire valider votre compte pour passer niveau 1.");
-        $("#accountStatusSection .progress-bar").attr("aria-valuenow", "50");
-        $("#accountStatusSection .progress-bar").attr("style", "width: 50%");
-        $("#accountStatusSection .progress-bar").html("Compte à valider");
+        $("#landing-created-account").show();
     } else if (blockchain.isValidated()) {
         $("#guziSection").show();
         $("#contactSection").show();
