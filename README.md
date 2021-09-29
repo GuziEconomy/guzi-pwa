@@ -47,8 +47,11 @@ Then open 127.0.0.1/tests.html
 10. [X] Add 1/2 xp for account validation waiting
 11. [X] Create my Guzis
 12. [X] Create a payment
-13. [ ] Send a payment
-14. [ ] Open and accept/reject account creation request
-15. [ ] Open and accept/reject payment
-16. [ ] Add wrong password handling in askPwdAndLoadPrivateKey function
+13. [X] Send a payment
+15. [X] Open and accept
+16. [ ] Design, design, design !
+17. [ ] Add wrong password handling in askPwdAndLoadPrivateKey function
 18. [X] importData : handle block, blockchain or payment
+19. [X] Test it all again
+20. [ ] Make a tab for contacts
+21. [ ] Reject payment => send refusal back
