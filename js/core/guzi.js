@@ -134,10 +134,10 @@ function basicBlockchainToObject(basicBC) {
         },
 
         createDailyGuzis: async function(key, d=null) {
-            //if (this.hasCreatedGuzisToday()) {
-            //    showModalError("Guzis déjà créés aujourd'hui");
-            //    return null;
-            //}
+            if (this.hasCreatedGuzisToday()) {
+                showModalError("Guzis déjà créés aujourd'hui");
+                return null;
+            }
             d = d || new Date().toISOString().slice(0, 10);
             const amount = this.getLevel();
             const gp = {};
@@ -387,7 +387,6 @@ async function updateContacts() {
     const contacts = await localforage.getItem('guzi-contacts');
     let html = "";
     if (contacts === null) { return }
-    // Trouver mon propre contact
     const me = contacts.find(c => c.id === 0);
         html += `
             <tr>
@@ -609,8 +608,7 @@ function showExportModal(content, target) {
         $("#exportModal").modal("hide");
     });
     $("#exportModalEmailButton").on("click", () => {
-        // TODO : change subject depending on TXTYPE
-        window.open(`mailto:${target}?subject=Demande de référent&body=${content}`);
+        window.open(`mailto:${target}?subject=[Guzi]&body=${content}`);
         $("#exportModal").modal("hide");
     });
     $('#exportModal').on('hidden.bs.modal', () => {
@@ -622,7 +620,6 @@ function showExportModal(content, target) {
 
 async function showPaymentModal() {
     let bc = await loadBlockchain();
-    // Add contacts as option
     const contacts = await localforage.getItem('guzi-contacts');
     const me = contacts.find(c => c.id === 0);
     $("#pay-modal-target").html("");
