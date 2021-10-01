@@ -77,6 +77,14 @@ async function loadBlockchain() {
 
 function basicBlockchainToObject(basicBC) {
     return $.extend(basicBC, {
+        /**
+         * Return true if the blockchain is a valid one
+         * Return false else
+         */
+        isValid: function() {
+            return true;
+        },
+
         getLevel : function() { 
             if (! this.isCreated() && ! this.isValidated()) { return 0; }
             return Math.floor(Math.cbrt(this[0].t)) + 1;
@@ -204,9 +212,11 @@ function basicBlockchainToObject(basicBC) {
                 this[0].g = Object.assign(this[0].g, tx.gp);
             }
             if (tx.t === TXTYPE.PAYMENT) {
-                this[0].g = this.removeGuzisFromAvailable(tx.gp);
                 const contacts = await localforage.getItem('guzi-contacts');
                 const me = contacts.find(c => c.id === 0);
+                if (tx.s === me.key) {
+                    this[0].g = this.removeGuzisFromAvailable(tx.gp);
+                }
                 if (tx.tu === me.key) {
                     let toadd = 0;
                     Object.keys(tx.gp).forEach(key => {
@@ -443,20 +453,16 @@ async function addContact(name, email, key, index=-1) {
 async function importData(data, modal) {
     jsondata = hexToJson(data);
     console.log(jsondata);
-    if (! isValidBC(jsondata)) {
+    if (jsondata === undefined) {
         console.error(jsondata);
         showModalError("Les informations données sont invalides.");
         return false;
     }
     if (jsondata.t === MSG.VALIDATION_DEMAND) {
-        // console.log("It's an initialization");
-        if (modal) {
-            modal.modal("hide");
-        }
+        if (modal) { modal.modal("hide"); }
         showModalAccountValidation(jsondata.bc[0]);
         return true;
     } else if (jsondata.t === MSG.VALIDATION_ACCEPT) {
-        // console.log("It's a validated account");
         if (modal) { modal.modal("hide"); }
         try {
             const blockchain = jsondata.bc;
@@ -469,16 +475,22 @@ async function importData(data, modal) {
         }
         return true;
     } else if (jsondata.t === MSG.PAYMENT) {
-        // console.log("It's a payment");
+        console.log("payment");
+        console.log(jsondata.bc);
+        const receivedBC = basicBlockchainToObject(jsondata.bc);
+        if (! receivedBC.isValid()) {
+            showModalError("La chaine de block reçue est invalide");
+            console.error(jsondata.bc);
+            return false;
+        }
+        if (modal) { modal.modal("hide"); }
+        const lastTx = receivedBC[0].tx[0];
+        const mybc = await loadBlockchain();
+        await mybc.addTx(lastTx);
+        await updateMyBlockchain(mybc);
+        updatePage();
         return true;
     }
-}
-
-/**
- * Return true if given blockchain is valid, false else.
- */
-function isValidBC(blockchain) {
-    return blockchain.t !== undefined;
 }
 
 function isValidInitializationBlock(block) {
@@ -631,7 +643,7 @@ async function showPaymentModal() {
             updatePage();
             const target = contacts.find(c => c.key === $("#pay-modal-target").val());
             if (target.key !== me.key) {
-                sendBlockchain(target.email, TXTYPE.PAYMENT, bc);
+                sendBlockchain(target.email, MSG.PAYMENT, bc);
             }
         });
     });
