@@ -99,8 +99,8 @@
             </div>
         </div>
 
-        <div id="landing-validated-account" class="container">
-            <nav class="navbar navbar-light bg-light">
+        <div id="landing-validated-account" class="container basically-hidden">
+            <nav class="navbar navbar-dark bg-dark">
                 <a class="navbar-brand" href="#">Gus</a>
                 <a id="navbarToggleBtn" class="navbar-toggler" type="button" data-bs-toggle="collapse" href="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -121,8 +121,8 @@
                 </div>
             </nav>
 
-            <div class="progress col-12">
-                <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Niveau 0</div>
+            <div class="progress w-100" style="height: 30px;">
+                <div id="levelProgressBar" class="progress-bar bg-info" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Niveau 0</div>
             </div>
 
             <p></p>
@@ -133,29 +133,29 @@
                         <div class="card text-white bg-primary mb-3">
                             <div class="card-body">
                                 <h3 class="card-title text-center">Guzis disponibles</h3>
-                                <h1 class="text-center display-3">12/160</h1>
+                                <h1 id="guziAvailableAmount" class="text-center display-3">12/160</h1>
                             </div>
                         </div>
-                        <div id="createMyGuzisButton" class="card text-white bg-secondary mb-3">
+                        <a id="createMyGuzisButton" class="card text-white bg-secondary mb-3" href="#">
                             <div class="card-body">
                                 <h1 class="card-title text-center display-4">Créer mes Guzis</h1>
                             </div>
-                        </div>
+                        </a>
                     </div>
 
                     <p class="d-none d-sm-block"></p>
 
                     <div class="card-deck">
-                        <div id="importPaymentButton" class="card text-white bg-warning mb-3">
+                        <a id="importPaymentButton" class="card text-white bg-warning mb-3" href="#">
                             <div class="card-body">
                                 <h1 class="card-title text-center display-4">Encaisser</h1>
                             </div>
-                        </div>
-                        <div id="paymentButton" class="card bg-light mb-3">
+                        </a>
+                        <a id="paymentButton" class="card bg-light mb-3" href="#">
                             <div class="card-body">
                                 <h1 class="card-title text-center display-3">Payer</h1>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
                 <div id="contacts" class="tab-panel">

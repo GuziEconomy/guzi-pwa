@@ -126,10 +126,10 @@ function basicBlockchainToObject(basicBC) {
         },
 
         createDailyGuzis: async function(key, d=null) {
-            if (this.hasCreatedGuzisToday()) {
-                showModalError("Guzis déjà créés aujourd'hui");
-                return null;
-            }
+            //if (this.hasCreatedGuzisToday()) {
+            //    showModalError("Guzis déjà créés aujourd'hui");
+            //    return null;
+            //}
             d = d || new Date().toISOString().slice(0, 10);
             const amount = this.getLevel();
             const gp = {};
@@ -273,6 +273,10 @@ function askPwdAndLoadPrivateKey(callback) {
         $("#pwdValidation").unbind("click");
         callback(keypair);
     });
+    $('#pwdModal').on('shown.bs.modal', function () {
+        $('#pwdPrompt').val('')
+        $('#pwdPrompt').trigger('focus')
+    })
     $("#pwdModal").modal("show");
 }
 
@@ -400,21 +404,15 @@ async function updatePage() {
     } else if (blockchain.isWaitingValidation()) {
         $("#landing-created-account").show();
     } else if (blockchain.isValidated()) {
-        $("#guziSection").show();
-        $("#contactSection").show();
+        $("#landing-validated-account").show();
         const level = blockchain.getLevel();
 
-        $("#guziAvailableAmount").html(`Guzis disponibles : ${blockchain.getGuzis()}/${level*30}`);
-        let percent = Math.floor(blockchain.getGuzis()/(level*30)*100);
-        $("#guziSection .progress-bar").attr("aria-valuenow", `${percent}`);
-        $("#guziSection .progress-bar").attr("style", `width: ${percent}%`);
-        $("#guziSection .progress-bar").html("");
+        $("#guziAvailableAmount").html(`${blockchain.getGuzis()}/${level*30}`);
 
-        $("#guzi-account-info").html(`Niveau ${level}. ${blockchain.getGuzisBeforeNextLevel()} Guzis pour atteindre le niveau ${level+1}.`);
+        $("#levelProgressBar").html(`Niveau ${level} (${blockchain.getGuzisBeforeNextLevel()} guzis avant niveau ${level+1})`);
         percent = Math.floor(blockchain.getGuzisBeforeNextLevel(true));
-        $("#accountStatusSection .progress-bar").attr("aria-valuenow", `${percent}`);
-        $("#accountStatusSection .progress-bar").attr("style", `width: ${percent}%`);
-        $("#accountStatusSection .progress-bar").html("");
+        $("#levelProgressBar").attr("aria-valuenow", `${percent}`);
+        $("#levelProgressBar").attr("style", `width: ${percent}%`);
     }
 }
 
@@ -466,7 +464,7 @@ async function importData(data, modal) {
             updatePage();
         } catch (error) {
             showModalError("La blockchain donnée n'est pas valide");
-            console.log(error);
+            console.error(error);
             return false;
         }
         return true;
