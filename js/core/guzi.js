@@ -522,6 +522,22 @@ function setBindings() {
     $("#newContactValidationButton").on("click", addContactFromModal);
     $("#newAccountValidationButton").on("click", createAccountFromModal);
     $("#paymentButton").on("click", showPaymentModal);
+
+    $(() => {
+        $(".tab-panel").hide();
+        $("#home").show();
+    });
+
+    $("#home-tab").on("click", () => {
+        $(".navbar-toggler-icon").click();
+        $(".tab-panel").hide();
+        $("#home").show();
+    });
+    $("#contacts-tab").on("click", () => {
+        $(".navbar-toggler-icon").click();
+        $(".tab-panel").hide();
+        $("#contacts").show();
+    });
 }
 
 function showModalImport() {
