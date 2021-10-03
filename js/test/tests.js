@@ -193,41 +193,6 @@ QUnit.module('exportToHex', () => {
     })
 })
 
-QUnit.module('isValidBC', () => {
-    QUnit.test('Should return false for empty string', (assert) => {
-        const result = isValidBC("");
-
-        assert.false(result);
-    })
-
-    QUnit.test('Should return false for an array', (assert) => {
-        const result = isValidBC([]);
-
-        assert.false(result);
-    })
-
-    QUnit.test('Should return false for (string)', (assert) => {
-        const result = isValidBC("wtf");
-
-        assert.false(result);
-    })
-
-    QUnit.test('Should return false for object without "t"', (assert) => {
-        const result = isValidBC({});
-
-        assert.false(result);
-    })
-
-    QUnit.test('Should return true for valid json', (assert) => {
-        const result = isValidBC({
-            t: MSG.VALIDATION_DEMAND,
-            bc:[validBirthBlock()]
-        });
-
-        assert.true(result);
-    })
-})
-
 QUnit.module('isValidInitializationBlock', () => {
     QUnit.test('Should return true for valid block', (assert) => {
         const result = isValidInitializationBlock(validBirthBlock());
@@ -643,7 +608,10 @@ QUnit.module('blockchain', () => {
             bc = await bc.createDailyGuzis(keypair, d2);
             bc = await bc.createDailyGuzis(keypair, d3);
             bc = await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 7);
+            const oldmethod = localforage.getItem;
+            localforage.getItem = () => [{id:0, key: keypair.getPublic(true, 'hex')}];
             const result = bc.getAvailableGuzis();
+            localforage.getItem = oldmethod;
 
             const expected = {};
             expected[d2] = [3];

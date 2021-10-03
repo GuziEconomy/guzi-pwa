@@ -114,9 +114,6 @@
                         <li class="nav-item">
                             <a id="contacts-tab" class="nav-link" href="#contacts">Contacts</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Être référent</a>
-                        </li>
                     </ul>
                 </div>
             </nav>
@@ -127,64 +124,68 @@
 
             <p></p>
 
-            <div class="tab-content">
-                <div id="home" class="tab-panel">
-                    <div class="card-deck">
-                        <div class="card text-white bg-primary mb-3">
-                            <div class="card-body">
-                                <h3 class="card-title text-center">Guzis disponibles</h3>
-                                <h1 id="guziAvailableAmount" class="text-center display-3">12/160</h1>
-                            </div>
-                        </div>
-                        <a id="createMyGuzisButton" class="card text-white bg-secondary mb-3" href="#">
-                            <div class="card-body">
-                                <h1 class="card-title text-center display-4">Créer mes Guzis</h1>
-                            </div>
-                        </a>
+            <div id="home" class="container tab-panel">
+                <div class="row">
+                    <div class="col-6 p-1">
+                        <button class="btn btn-primary w-100" disabled>
+                            <p id="guziAvailableAmount" class="text-center vertical-align">
+                            Guzis disponibles 0/0
+                            </p>
+                        </button>
                     </div>
-
-                    <p class="d-none d-sm-block"></p>
-
-                    <div class="card-deck">
-                        <a id="importPaymentButton" class="card text-white bg-warning mb-3" href="#">
-                            <div class="card-body">
-                                <h1 class="card-title text-center display-4">Encaisser</h1>
-                            </div>
-                        </a>
-                        <a id="paymentButton" class="card bg-light mb-3" href="#">
-                            <div class="card-body">
-                                <h1 class="card-title text-center display-3">Payer</h1>
-                            </div>
-                        </a>
+                    <div class="col-6 p-1">
+                        <button id="createMyGuzisButton" class="btn btn-secondary w-100">
+                            <p class="text-center vertical-align">Créer mes Guzis</p>
+                        </button>
+                    </div>
+                    <div class="col-6 p-1">
+                        <button id="importPaymentButton" class="btn btn-warning w-100">
+                            <p class="text-center vertical-align">Encaisser</p>
+                        </button>
+                    </div>
+                    <div class="col-6 p-1">
+                        <button id="paymentButton" class="btn btn-danger w-100">
+                            <p class="text-center vertical-align">Payer</p>
+                        </button>
+                    </div>
+                    <div class="col-6 p-1">
+                        <button id="be-referent-button" class="btn btn-success w-100">
+                            <p class="text-center vertical-align">Être référent</p>
+                        </button>
+                    </div>
+                    <div class="col-6 p-1">
+                        <button id="share-my-key-button" class="btn btn-info w-100">
+                            <p class="text-center vertical-align">Partager ma clé</p>
+                        </button>
                     </div>
                 </div>
-                <div id="contacts" class="tab-panel">
-                    <div class="row">
-                        <div class="col">
-                            <h2> Contacts </h2>
-                        </div>
-                        <div class="col-12 col-md-auto">
-                            <div class="btn-group-vertical">
-                                <button id="newContactButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">
-                                    Nouveau contact
-                                </button>
-                            </div>
+            </div>
+            <div id="contacts" class="tab-panel">
+                <div class="row">
+                    <div class="col">
+                        <h2> Contacts </h2>
+                    </div>
+                    <div class="col-12 col-md-auto">
+                        <div class="btn-group-vertical">
+                            <button id="newContactButton" class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#newContactModal">
+                                Nouveau contact
+                            </button>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Nom</th>
-                                        <th scope="col">Email</th>
-                                        <th scope="col">Payer</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="contact-list">
-                                </tbody>
-                            </table>
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Nom</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Payer</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contact-list">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

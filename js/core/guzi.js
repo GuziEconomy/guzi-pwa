@@ -214,6 +214,9 @@ function basicBlockchainToObject(basicBC) {
             if (tx.t === TXTYPE.PAYMENT) {
                 const contacts = await localforage.getItem('guzi-contacts');
                 const me = contacts.find(c => c.id === 0);
+                console.log(tx.s);
+                console.log(tx);
+                console.log(contacts);
                 if (tx.s === me.key) {
                     this[0].g = this.removeGuzisFromAvailable(tx.gp);
                 }
@@ -416,7 +419,7 @@ async function updatePage() {
         $("#landing-validated-account").show();
         const level = blockchain.getLevel();
 
-        $("#guziAvailableAmount").html(`${blockchain.getGuzis()}/${level*30}`);
+        $("#guziAvailableAmount").html(`Guzis : ${blockchain.getGuzis()}/${level*30}`);
 
         $("#levelProgressBar").html(`Niveau ${level} (${blockchain.getGuzisBeforeNextLevel()} guzis avant niveau ${level+1})`);
         percent = Math.floor(blockchain.getGuzisBeforeNextLevel(true));
@@ -474,8 +477,6 @@ async function importData(data, modal) {
         }
         return true;
     } else if (jsondata.t === MSG.PAYMENT) {
-        console.log("payment");
-        console.log(jsondata.bc);
         const receivedBC = basicBlockchainToObject(jsondata.bc);
         if (! receivedBC.isValid()) {
             showModalError("La chaine de block reçue est invalide");
@@ -546,6 +547,14 @@ function setBindings() {
         $(".navbar-toggler-icon").click();
         $(".tab-panel").hide();
         $("#contacts").show();
+    });
+    $("#be-referent-button").on("click", () => {
+        showModalImport();
+    });
+    $("#share-my-key-button").on("click", async () => {
+        const contacts = await localforage.getItem('guzi-contacts');
+        const me = contacts.find(c => c.id === 0);
+        showExportModal(me.key);
     });
 }
 
