@@ -559,6 +559,9 @@ function setBindings() {
     $('#errorModal').on('shown.bs.modal', () => {
         $('#errorModal button').trigger('focus')
     });
+    $("form").submit((e) => {
+        e.preventDefault();
+    });
 }
 
 function showModalImport() {
