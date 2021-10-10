@@ -195,14 +195,14 @@
         <div class="modal fade" id="newContactModal" tabindex="-1" aria-labelledby="newContactModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="newContactModalLabel">Nouveau contact</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="newContactModalLabel">Nouveau contact</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
                             <div class="mb-3">
                                 <label for="new-contact-modal-name" class="form-label">Nom</label>
                                 <input type="text" class="form-control" id="new-contact-modal-name">
@@ -216,12 +216,12 @@
                                 <label for="new-contact-modal-key" class="form-label">Clé publique</label>
                                 <textarea class="form-control" id="new-contact-modal-key" rows="3"></textarea>
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button id="newContactValidationButton" type="button" class="btn btn-primary" data-bs-dismiss="modal"> Enregistrer</button>
-                    </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button id="newContactValidationButton" type="submit" class="btn btn-primary" data-bs-dismiss="modal"> Enregistrer</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -230,14 +230,14 @@
         <div class="modal fade" id="newAccountModal" tabindex="-1" aria-labelledby="newAccountModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="newAccountModalLabel">Create account</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="newAccountModalLabel">Create account</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
                             <div class="mb-3">
                                 <label for="new-account-modal-birthdate" class="form-label">Birthdate</label>
                                 <input type="text" class="form-control" id="new-account-modal-birthdate" placeholder="DD/MM/YYYY" required>
@@ -254,12 +254,12 @@
                                     Password and confirmation must be the same
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button id="newAccountValidationButton" type="button" class="btn btn-primary" > Enregistrer</button>
-                    </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button id="newAccountValidationButton" type="submit" class="btn btn-primary" > Enregistrer</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -293,25 +293,25 @@
         <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exportModalLabel"> Envoyer</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exportModalLabel"> Envoyer</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
                             <div class="mb-3">
                                 <label for="export-data-content" class="form-label">Contenu à envoyer</label>
                                 <textarea class="form-control" id="export-data-content" rows="5"></textarea>
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Annuler</button>
-                        <button id="exportModalCopyButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Copier</button>
-                        <button id="exportModalEmailButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Envoyer par mail</button>
-                    </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Annuler</button>
+                            <button id="exportModalCopyButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Copier</button>
+                            <button id="exportModalEmailButton" type="submit" class="btn btn-secondary" data-bs-dismiss="modal"> Envoyer par mail</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -356,6 +356,7 @@
         <div class="modal fade" id="pwdModal" tabindex="-1" aria-labelledby="pwdModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
+                        <form>
                     <div class="modal-header">
                         <h5 class="modal-title" id="newContactModalLabel"> Mot de passe</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -363,17 +364,16 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form>
                             <div class="mb-3">
                                 <input type="password" class="form-control" id="pwdPrompt" placeholder="Mot de passe">
                             </div>
-                        </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Annuler</button>
-                        <button id="pwdValidation" type="button" class="btn btn-success">
+                        <button id="pwdValidation" type="submit" class="btn btn-success">
                             Valider
                         </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -390,13 +390,11 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form>
-                            <div class="mb-3">
-                                <div id="modal-error-content" class="alert alert-danger" role="alert">
+                        <div class="mb-3">
+                            <div id="modal-error-content" class="alert alert-danger" role="alert">
                                 An error occured
-                                </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Fermer</button>
@@ -409,14 +407,14 @@
         <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="paymentModalLabel">Paiement</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="paymentModalLabel">Paiement</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
                             <div class="mb-3">
                                 <label for="pay-modal-target" class="form-label">Qui paye-t-on ?</label>
                                 <select class="form-control" id="pay-modal-target">
@@ -428,12 +426,12 @@
                                 <input type="range" class="form-control-range" min="0" max="10" id="pay-modal-amount" onInput="$('#pay-modal-amount-display').html($(this).val())">
                                 <span id="pay-modal-amount-display">0</span>
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button id="paymentValidationButton" type="button" class="btn btn-primary" data-bs-dismiss="modal"> Envoyer Paiement</button>
-                    </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button id="paymentValidationButton" type="submit" class="btn btn-primary" data-bs-dismiss="modal"> Envoyer Paiement</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

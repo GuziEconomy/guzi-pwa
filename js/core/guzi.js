@@ -286,10 +286,6 @@ function askPwdAndLoadPrivateKey(callback) {
         $("#pwdValidation").unbind("click");
         callback(keypair);
     });
-    $('#pwdModal').on('shown.bs.modal', function () {
-        $('#pwdPrompt').val('')
-        $('#pwdPrompt').trigger('focus')
-    })
     $("#pwdModal").modal("show");
 }
 
@@ -555,6 +551,13 @@ function setBindings() {
         const contacts = await localforage.getItem('guzi-contacts');
         const me = contacts.find(c => c.id === 0);
         showExportModal(me.key);
+    });
+    $('#pwdModal').on('shown.bs.modal', () => {
+        $('#pwdPrompt').val('')
+        $('#pwdPrompt').trigger('focus')
+    });
+    $('#errorModal').on('shown.bs.modal', () => {
+        $('#errorModal button').trigger('focus')
     });
 }
 
