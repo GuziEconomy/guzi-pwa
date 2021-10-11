@@ -213,10 +213,8 @@ function basicBlockchainToObject(basicBC) {
             }
             if (tx.t === TXTYPE.PAYMENT) {
                 const contacts = await localforage.getItem('guzi-contacts');
-                const me = contacts.find(c => c.id === 0);
-                console.log(tx.s);
-                console.log(tx);
                 console.log(contacts);
+                const me = contacts.find(c => c.id === 0);
                 if (tx.s === me.key) {
                     this[0].g = this.removeGuzisFromAvailable(tx.gp);
                 }
@@ -450,7 +448,7 @@ async function addContact(name, email, key, index=-1) {
 
 async function importData(data, modal) {
     jsondata = hexToJson(data);
-    console.log(jsondata);
+    // console.log(jsondata);
     if (jsondata === undefined) {
         console.error(jsondata);
         showModalError("Les informations données sont invalides.");
@@ -501,9 +499,9 @@ function isValidInitializationBlock(block) {
 }
 
 async function updateMyBlockchain(blockchain) {
-    console.log(blockchain);
+    // console.log(blockchain);
     const oldBC = await loadBlockchain();
-    console.log(oldBC);
+    // console.log(oldBC);
     const newBC = updateBlockchain(oldBC, blockchain);
     return saveBlockchain(newBC);
 }
