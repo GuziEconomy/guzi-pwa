@@ -133,7 +133,7 @@ function basicBlockchainToObject(basicBC) {
                 && this[this.length-1].ph === REF_HASH;
         },
 
-        createDailyGuzis: async function(key, d=null) {
+        createDailyGuzisTx: async function(key, d=null) {
             if (this.hasCreatedGuzisToday()) {
                 showModalError("Guzis déjà créés aujourd'hui");
                 return null;
@@ -150,9 +150,7 @@ function basicBlockchainToObject(basicBC) {
                 a: amount,
                 gp: gp
             };
-            tx = await signtx(tx, key);
-            await this.addTx(tx);
-            return this;
+            return await signtx(tx, key);
         },
 
         getAvailableGuzis: function(amount=-1) {
@@ -199,12 +197,11 @@ function basicBlockchainToObject(basicBC) {
                 tu: target,
                 v: CUR_VERSION,
             };
-            tx = await signtx(tx, key);
-            await this.addTx(tx);
-            return this;
+
+            return await signtx(tx, key);
         },
 
-        addTx: async function(tx) {
+        addTx: async function(tx, contacts) {
             if (this[0].s !== undefined) {
                 this.newBlock();
             }
@@ -212,8 +209,6 @@ function basicBlockchainToObject(basicBC) {
                 this[0].g = Object.assign(this[0].g, tx.gp);
             }
             if (tx.t === TXTYPE.PAYMENT) {
-                const contacts = await localforage.getItem('guzi-contacts');
-                console.log(contacts);
                 const me = contacts.find(c => c.id === 0);
                 if (tx.s === me.key) {
                     this[0].g = this.removeGuzisFromAvailable(tx.gp);
@@ -480,7 +475,8 @@ async function importData(data, modal) {
         if (modal) { modal.modal("hide"); }
         const lastTx = receivedBC[0].tx[0];
         const mybc = await loadBlockchain();
-        await mybc.addTx(lastTx);
+        const contacts = await localforage.getItem('guzi-contacts');
+        await mybc.addTx(lastTx, contacts);
         await updateMyBlockchain(mybc);
         updatePage();
         return true;
@@ -648,7 +644,7 @@ async function showPaymentModal() {
         $("#paymentModal").modal("hide");
         // 1. Create TX. 2. Add it to BC. 3. Save BC.
         askPwdAndLoadPrivateKey(async (keypair) => {
-            bc = await bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val())
+            await bc.addTx(await bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val()));
             await updateMyBlockchain(bc);
             updatePage();
             const target = contacts.find(c => c.key === $("#pay-modal-target").val());
@@ -678,7 +674,8 @@ async function validateAccount(birthblock, key) {
 function createDailyGuzis() {
     askPwdAndLoadPrivateKey(async (keypair) => {
         let bc = await loadBlockchain();
-        bc = await bc.createDailyGuzis(keypair);
+        const contacts = await localforage.getItem('guzi-contacts');
+        await bc.addTx(await bc.createDailyGuzisTx(keypair, contacts));
         if (bc === null) {
             return;
         }

@@ -349,8 +349,8 @@ QUnit.module('blockchain', () => {
         QUnit.test("Should return last block g for valid blockchain", async (assert) => {
             let bc = basicBlockchainToObject([validInitBlock(), validBirthBlock()]);
             bc[0].t = 27;
-            bc = await bc.createDailyGuzis(keypair, "2021-09-25");
-            bc = await bc.createDailyGuzis(keypair, "2021-09-26");
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, "2021-09-25"));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, "2021-09-26"));
             const result = bc.getGuzis();
 
             assert.equal(result, 8);
@@ -473,15 +473,15 @@ QUnit.module('blockchain', () => {
     QUnit.module('createDailyGuzis', () => {
         QUnit.test("Should return null if Guzis have already been created today.", async (assert) => {
             const bc = basicBlockchainToObject(validBlockchain());
-            await bc.createDailyGuzis(keypair);
-            const result = await bc.createDailyGuzis(keypair);
+            await bc.addTx(await bc.createDailyGuzisTx(keypair));
+            const result = await bc.createDailyGuzisTx(keypair);
 
             assert.notOk(result);
         })
 
         QUnit.test("Should return blockchain in OK case.", async (assert) => {
             let bc = basicBlockchainToObject(validBlockchain());
-            bc = await bc.createDailyGuzis(keypair);
+            await bc.addTx(await bc.createDailyGuzisTx(keypair));
             const result = bc[0].tx[0]
 
             assert.true(keypair.verify(hashtx(result), result.h));
@@ -505,7 +505,7 @@ QUnit.module('blockchain', () => {
         QUnit.test("Should create 1+Total^(1/3) Guzis.", async (assert) => {
             let bc = basicBlockchainToObject(validBlockchain());
             bc[0].t = 27; // => 3 +1 Guzi/day
-            bc = await bc.createDailyGuzis(keypair);
+            await bc.addTx(await bc.createDailyGuzisTx(keypair));
             const result = bc[0].tx[0]
 
             assert.true(keypair.verify(hashtx(result), result.h));
@@ -540,7 +540,7 @@ QUnit.module('blockchain', () => {
         QUnit.test("Should return each index.", async (assert) => {
             let bc = basicBlockchainToObject(validBlockchain());
             bc[0].t = 27;
-            bc = await bc.createDailyGuzis(keypair, "2021-09-25");
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, "2021-09-25"));
             const result = bc.getAvailableGuzis();
 
             const expected = {"2021-09-25": [0, 1, 2, 3]};
@@ -554,9 +554,9 @@ QUnit.module('blockchain', () => {
             const d1 = "2021-09-23";
             const d2 = "2021-09-24";
             const d3 = "2021-09-25";
-            bc = await bc.createDailyGuzis(keypair, d1);
-            bc = await bc.createDailyGuzis(keypair, d2);
-            bc = await bc.createDailyGuzis(keypair, d3);
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d1));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d2));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d3));
             const result = bc.getAvailableGuzis();
 
             const expected = {};
@@ -571,7 +571,7 @@ QUnit.module('blockchain', () => {
             let bc = basicBlockchainToObject(validBlockchain());
             bc[0].t = 27;
             const d = "2021-09-25";
-            bc = await bc.createDailyGuzis(keypair, d);
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d));
             const result = bc.getAvailableGuzis(2);
 
             const expected = {};
@@ -586,9 +586,9 @@ QUnit.module('blockchain', () => {
             const d1 = "2021-09-23";
             const d2 = "2021-09-24";
             const d3 = "2021-09-25";
-            bc = await bc.createDailyGuzis(keypair, d1);
-            bc = await bc.createDailyGuzis(keypair, d2);
-            bc = await bc.createDailyGuzis(keypair, d3);
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d1));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d2));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d3));
             const result = bc.getAvailableGuzis(7);
 
             const expected = {};
@@ -604,14 +604,12 @@ QUnit.module('blockchain', () => {
             const d1 = "2021-09-23";
             const d2 = "2021-09-24";
             const d3 = "2021-09-25";
-            bc = await bc.createDailyGuzis(keypair, d1);
-            bc = await bc.createDailyGuzis(keypair, d2);
-            bc = await bc.createDailyGuzis(keypair, d3);
-            bc = await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 7);
-            const oldmethod = localforage.getItem;
-            localforage.getItem = () => [{id:0, key: keypair.getPublic(true, 'hex')}];
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d1));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d2));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d3));
+            const contacts = [{id:0, key: keypair.getPublic(true, 'hex')}];
+            await bc.addTx(await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 7), contacts);
             const result = bc.getAvailableGuzis();
-            localforage.getItem = oldmethod;
 
             const expected = {};
             expected[d2] = [3];
@@ -625,8 +623,9 @@ QUnit.module('blockchain', () => {
         QUnit.test("Should make valid transaction.", async (assert) => {
             let bc = basicBlockchainToObject(validBlockchain());
             bc[0].t = 27;
-            bc = await bc.createDailyGuzis(keypair, "2021-09-25");
-            bc = await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 3, "2021-09-25");
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, "2021-09-25"));
+            const contacts = [{id:0, key: keypair.getPublic(true, 'hex')}];
+            await bc.addTx(await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 3, "2021-09-25"), contacts);
             const result = bc[0].tx[0];
 
             assert.true(keypair.verify(hashtx(result), result.h));
@@ -651,7 +650,7 @@ QUnit.module('blockchain', () => {
             let bc = basicBlockchainToObject(validBlockchain());
             bc[0].t = 27;
             const d = "2021-09-25";
-            bc = await bc.createDailyGuzis(keypair, d);
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d));
             const result = bc[0].g;
             const expected = {};
             expected[d] = [0, 1, 2, 3];
@@ -665,10 +664,11 @@ QUnit.module('blockchain', () => {
             const d1 = "2021-09-23";
             const d2 = "2021-09-24";
             const d3 = "2021-09-25";
-            bc = await bc.createDailyGuzis(keypair, d1);
-            bc = await bc.createDailyGuzis(keypair, d2);
-            bc = await bc.createDailyGuzis(keypair, d3);
-            bc = await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 7);
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d1));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d2));
+            await bc.addTx(await bc.createDailyGuzisTx(keypair, d3));
+            const contacts = [{id:0, key: keypair.getPublic(true, 'hex')}];
+            await bc.addTx(await bc.createPaymentTx(keypair, keypair2.getPublic(true, 'hex'), 7), contacts);
             const result = bc[0].g;
             const expected = {};
             expected[d2] = [3];
