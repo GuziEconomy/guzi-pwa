@@ -25,6 +25,7 @@ const TXTYPE = {
 }
 
 async function createAccountFromModal() {
+    let name = document.getElementById("new-account-modal-name").value;
     let birthdate = document.getElementById("new-account-modal-birthdate").value;
     // DD/MM/YYYY to YYYY-MM-DD
     birthdate = birthdate.slice(6,10) + "-" + birthdate.slice(3,5) + "-" + birthdate.slice(0,2);
@@ -43,7 +44,7 @@ async function createAccountFromModal() {
     birthblock = await signblock(birthblock, keypair);
     cypherAndSavePrivateKey(keypair, pwd);
     await updateMyBlockchain([birthblock]);
-    await addContact("Moi", "-", mypubkey, 0);
+    await addContact(name, "-", mypubkey, 0);
     updatePage();
     updateContacts();
     $("#newAccountModal").modal("hide");
@@ -73,6 +74,18 @@ async function loadBlockchain() {
         blockchain = msgpack.decode(blockchain);
     }
     return basicBlockchainToObject(blockchain);
+}
+
+async function loadContacts() {
+    return await localforage.getItem('guzi-contacts');
+}
+
+async function loadMe() {
+    const contacts = await loadContacts();
+    if (contacts === null) {
+        return {name:"", key:"", email:""};
+    }
+    return contacts.find(c => c.id === 0);
 }
 
 function basicBlockchainToObject(basicBC) {
@@ -376,7 +389,7 @@ async function signtx(tx, key) {
 }
 
 async function updateContacts() {
-    const contacts = await localforage.getItem('guzi-contacts');
+    const contacts = await loadContacts();
     let html = "";
     if (contacts === null) { return }
     const me = contacts.find(c => c.id === 0);
@@ -400,6 +413,8 @@ async function updateContacts() {
 async function updatePage() {
     $(".basically-hidden").hide();
     blockchain = await loadBlockchain();
+    me = await loadMe();
+    $("#navbarUserName").html(me.name);
     if (blockchain.isEmpty()) {
         $("#landing-first-visit").show();
     } else if (blockchain.isWaitingValidation()) {
@@ -426,7 +441,7 @@ function addContactFromModal() {
 }
 
 async function addContact(name, email, key, index=-1) {
-    contacts = await localforage.getItem('guzi-contacts');
+    contacts = await loadContacts();
     if (contacts === null) {
         contacts = []
     } else if (index === -1) {
@@ -475,7 +490,7 @@ async function importData(data, modal) {
         if (modal) { modal.modal("hide"); }
         const lastTx = receivedBC[0].tx[0];
         const mybc = await loadBlockchain();
-        const contacts = await localforage.getItem('guzi-contacts');
+        const contacts = await loadContacts();
         await mybc.addTx(lastTx, contacts);
         await updateMyBlockchain(mybc);
         updatePage();
@@ -542,8 +557,7 @@ function setBindings() {
         showModalImport();
     });
     $("#share-my-key-button").on("click", async () => {
-        const contacts = await localforage.getItem('guzi-contacts');
-        const me = contacts.find(c => c.id === 0);
+        const me = loadMe();
         showExportModal(me.key);
     });
     $('#pwdModal').on('shown.bs.modal', () => {
@@ -629,7 +643,7 @@ function showExportModal(content, target) {
 
 async function showPaymentModal() {
     let bc = await loadBlockchain();
-    const contacts = await localforage.getItem('guzi-contacts');
+    const contacts = await loadContacts();
     const me = contacts.find(c => c.id === 0);
     $("#pay-modal-target").html("");
     contacts.forEach(c => {
@@ -674,7 +688,7 @@ async function validateAccount(birthblock, key) {
 function createDailyGuzis() {
     askPwdAndLoadPrivateKey(async (keypair) => {
         let bc = await loadBlockchain();
-        const contacts = await localforage.getItem('guzi-contacts');
+        const contacts = await loadContacts();
         await bc.addTx(await bc.createDailyGuzisTx(keypair, contacts));
         if (bc === null) {
             return;
