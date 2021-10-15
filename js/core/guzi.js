@@ -644,7 +644,7 @@ async function showPaymentModal() {
         $("#paymentModal").modal("hide");
         // 1. Create TX. 2. Add it to BC. 3. Save BC.
         askPwdAndLoadPrivateKey(async (keypair) => {
-            await bc.addTx(await bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val()));
+            await bc.addTx(await bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts);
             await updateMyBlockchain(bc);
             updatePage();
             const target = contacts.find(c => c.key === $("#pay-modal-target").val());
