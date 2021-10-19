@@ -3,11 +3,24 @@ const filesToCache = [
     '/',
     '/index.html',
     '/css/bootstrap.min.css',
+    '/css/guzi.css',
+    '/js/core/guzi.js',
+    '/js/libs/jquery.min.js',
+    '/js/libs/bootstrap.bundle.min.js',
+    '/js/libs/localforage.min.js',
+    '/js/libs/msgpack.min.js',
+    '/js/libs/elliptic.min.js',
+    '/js/libs/sha.min.js',
+    '/js/libs/crypto-js/core.js',
+    '/js/libs/crypto-js/enc-base64.js',
+    '/js/libs/crypto-js/md5.js',
+    '/js/libs/crypto-js/evpkdf.js',
+    '/js/libs/crypto-js/cipher-core.js',
+    '/js/libs/crypto-js/aes.js',
     '/js/bootstrap.bundle.min.css',
-    '/js/guzi.js',
-    '/js/pwacompat.min.js',
-    '/js/localforage.min.js',
+    '/js/libs/pwacompat.min.js',
     '/images/logo.png'
+
 ]
 
 self.addEventListener("install", e => {
