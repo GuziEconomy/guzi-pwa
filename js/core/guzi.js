@@ -395,7 +395,7 @@ async function updateContacts() {
     const me = contacts.find(c => c.id === 0);
         html += `
             <tr>
-                <td>${me.name}</td>
+                <td>${me.name} (moi)</td>
                 <td>${me.email}</td>
                 <td>${me.key.substring(0, 10)}...</td>
             </tr>`;
@@ -557,7 +557,7 @@ function setBindings() {
         showModalImport();
     });
     $("#share-my-key-button").on("click", async () => {
-        const me = loadMe();
+        const me = await loadMe();
         showExportModal(me.key);
     });
     $('#pwdModal').on('shown.bs.modal', () => {
