@@ -41,6 +41,25 @@ const validBlockchain = () => {
     return [validInitBlock(), validBirthBlock()];
 }
 
+QUnit.module('callLibraries', () => {
+    QUnit.test('AES crypt//decrypt', (assert) => {
+        const crypted = CryptoJS.AES.encrypt("test", "toto").toString();
+        const bytes  = CryptoJS.AES.decrypt(crypted, "toto");
+        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+        assert.equal(decrypted, "test");
+    })
+
+    QUnit.test('elliptic', (assert) => {
+        const ec = new elliptic.ec('secp256k1');
+
+        assert.ok(ec);
+    })
+
+    QUnit.test('localforage', (assert) => {
+        assert.ok(localforage);
+    })
+})
+
 QUnit.module('makeBirthBlock', () => {
     QUnit.test('Should return corectly filled block', (assert) => {
         const birthdate = "12/12/2002";
