@@ -255,7 +255,7 @@ function basicBlockchainToObject(basicBC) {
                 }
                 if (this[i].tx !== undefined) {
                     for (let t=0; t<this[i].tx.length; t++) {
-                        if (this[i].tx[t].d === new Date().toISOString().slice(0, 10) && this[i].tx[t].t === 0) {
+                        if (this[i].tx[t].d === new Date().toISOString().slice(0, 10) && this[i].tx[t].t === TXTYPE.GUZI_CREATE) {
                             return true;
                         }
                     }
@@ -561,11 +561,14 @@ function setBindings() {
         showExportModal(me.key);
     });
     $('#pwdModal').on('shown.bs.modal', () => {
-        $('#pwdPrompt').val('')
-        $('#pwdPrompt').trigger('focus')
+        $('#pwdPrompt').val('');
+        $('#pwdPrompt').trigger('focus');
     });
     $('#errorModal').on('shown.bs.modal', () => {
-        $('#errorModal button').trigger('focus')
+        $('#errorModal button').trigger('focus');
+    });
+    $("#importModal").on('shown.bs.modal', () => {
+        $('#import-data-pasted').trigger('focus');
     });
     $("form").submit((e) => {
         e.preventDefault();
@@ -689,10 +692,11 @@ function createDailyGuzis() {
     askPwdAndLoadPrivateKey(async (keypair) => {
         let bc = await loadBlockchain();
         const contacts = await loadContacts();
-        await bc.addTx(await bc.createDailyGuzisTx(keypair, contacts));
-        if (bc === null) {
+        const tx = await bc.createDailyGuzisTx(keypair);
+        if (tx === null) { 
             return;
         }
+        await bc.addTx(tx, contacts);
         await updateMyBlockchain(bc);
         updatePage();
     });

@@ -49,9 +49,11 @@ Then open 127.0.0.1/tests.html
 12. [X] Create a payment
 13. [X] Send a payment
 15. [X] Open and accept
-16. [ ] Design, design, design !
+16. [X] Design, design, design !
 17. [ ] Add wrong password handling in askPwdAndLoadPrivateKey function
 18. [X] importData : handle block, blockchain or payment
 19. [X] Test it all again
-20. [ ] Make a tab for contacts
+20. [X] Make a tab for contacts
 21. [ ] Reject payment => send refusal back
+22. [X] Bug in hasCreatedGuzisToday that always return false
+23. [X] Focus in form when import clicked
