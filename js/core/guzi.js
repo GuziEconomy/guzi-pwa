@@ -362,13 +362,13 @@ function hashblock(block) {
 
 function hashtx(tx) {
     const t = {
-        a: tx.a,
-        d: tx.d,
-        gp: tx.gp,
-        s: tx.s,
-        t: tx.t,
-        tu: tx.tu,
-        v: tx.v
+        a: tx.a,    // amount
+        d: tx.d,    // date
+        gp: tx.gp,  // Guzis
+        s: tx.s,    // Signer
+        t: tx.t,    // Transaction Type
+        tu: tx.tu,  // Target User
+        v: tx.v     // Version
     }
     const packedtx = msgpack.encode(t);
     const shaObj = new jsSHA("SHA-256", "UINT8ARRAY", { encoding: "UTF8" });
@@ -537,6 +537,8 @@ function setBindings() {
     $("#newContactValidationButton").on("click", addContactFromModal);
     $("#newAccountValidationButton").on("click", createAccountFromModal);
     $("#paymentButton").on("click", showPaymentModal);
+    $("#be-referent-button").on("click", showModalImport);
+    $("#historyButton").on("click", showHistoryModal);
 
     $(() => {
         $(".tab-panel").hide();
@@ -552,9 +554,6 @@ function setBindings() {
         $(".navbar-toggler-icon").click();
         $(".tab-panel").hide();
         $("#contacts").show();
-    });
-    $("#be-referent-button").on("click", () => {
-        showModalImport();
     });
     $("#share-my-key-button").on("click", async () => {
         const me = await loadMe();
@@ -642,6 +641,33 @@ function showExportModal(content, target) {
         $("#exportModalEmailButton").unbind("click");
     });
     $("#exportModal").modal("show");
+}
+
+async function showHistoryModal() {
+    const contacts = await loadContacts();
+    const bc = await loadBlockchain();
+    let html = "";
+    bc.forEach(block => {
+        if (block.tx) {
+            block.tx.forEach(tx => {
+                const source = contacts.find(c => c.key === tx.s);
+                const target = contacts.find(c => c.key === tx.tu);
+                let type = "";
+                if (tx.t === TXTYPE.GUZI_CREATE) { type = "Création" }
+                if (tx.t === TXTYPE.PAYMENT) { type = "Paiement" }
+                html += `
+                <tr>
+                    <td>${source ? source.name : "??"}</td>
+                    <td>${target ? target.name : "??"}</td>
+                    <td>${tx.a}</td>
+                    <td>${type}</td>
+                    <td>${tx.d}</td>
+                </tr>`;
+            });
+        }
+    });
+    document.getElementById("history-list").innerHTML = html;
+    $("#historyModal").modal("show");
 }
 
 async function showPaymentModal() {
