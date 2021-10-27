@@ -1,0 +1,35 @@
+{
+  "name": "guzi-pwa",
+  "version": "1.0.0",
+  "description": "Guzi as Progressive Web App",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GuziEconomy/guzi-pwa.git"
+  },
+  "keywords": [
+    "guzi",
+    "pwa",
+    "cryptocurrency"
+  ],
+  "author": "Gus",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GuziEconomy/guzi-pwa/issues"
+  },
+  "homepage": "https://github.com/GuziEconomy/guzi-pwa#readme",
+  "dependencies": {
+    "crypto-js": "^4.1.1",
+    "guzi-money": "^0.1.0",
+    "localforage": "^1.10.0",
+    "msgpack-lite": "^0.1.26"
+  },
+  "devDependencies": {
+    "webpack": "^5.60.0",
+    "webpack-cli": "^4.9.1"
+  }
+}
