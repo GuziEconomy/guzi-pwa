@@ -25,20 +25,15 @@ async function createAccountFromModal() {
   // Create the first block of the blockchain : the Birthday Block
   let birthblock = Blockchain.makeBirthBlock(birthdate, privateKey);
   cypherAndSavePrivateKey(privateKey, pwd);
-  await updateMyBlockchain([birthblock]);
-  await addContact(name, "-", secp.getPublicKey(privateKey, true), 0);
+  saveBlockchain([birthblock]);
+  await addContact(name, "-", Blockchain.publicFromPrivate(privateKey), 0);
   updatePage();
   updateContacts();
   $("#newAccountModal").modal("hide");
 }
 
 function saveBlockchain(bc) {
-  const cleanBc = [];
-  for (let i=0; i<bc.length; i++) {
-    cleanBc[i] = bc[i];
-  }
-  const binBc = msgpack.encode(cleanBc);
-  return localforage.setItem('guzi-blockchain', binBc).then(() => {
+  return localforage.setItem('guzi-blockchain', bc.asBinary).then(() => {
     console.log(`Blockchain successfully saved`);
   }).catch(function(err) {
     console.error(`Error while saving Blockchain`);
@@ -89,12 +84,10 @@ function askPwdAndLoadPrivateKey(callback) {
       showModalError("Mot de passe incorect.");
       return;
     }
-    let keypair = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    const ec = new elliptic.ec('secp256k1');
-    keypair = ec.keyFromPrivate(keypair.priv);
+    const privateKey = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
     $("#pwdModal").modal("hide");
     $("#pwdValidation").unbind("click");
-    callback(keypair);
+    callback(privateKey);
   });
   $("#pwdModal").modal("show");
 }
@@ -145,10 +138,13 @@ async function updatePage() {
   const me = await loadMe();
   $("#navbarUserName").html(me.name);
   if (blockchain.isEmpty()) {
+    console.log('Empty');
     $("#landing-first-visit").show();
   } else if (blockchain.isWaitingValidation()) {
+    console.log('waiting');
     $("#landing-created-account").show();
   } else if (blockchain.isValidated()) {
+    console.log('validated');
     $("#landing-validated-account").show();
     const level = blockchain.getLevel();
 
@@ -201,7 +197,7 @@ async function importData(data, modal) {
     if (modal) { modal.modal("hide"); }
     try {
       const blockchain = jsondata.bc;
-      await updateMyBlockchain(blockchain);
+      saveBlockchain(blockchain);
       updatePage();
     } catch (error) {
       showModalError("La blockchain donnée n'est pas valide");
@@ -219,20 +215,11 @@ async function importData(data, modal) {
     if (modal) { modal.modal("hide"); }
     const lastTx = receivedBC[0].tx[0];
     const mybc = await loadBlockchain();
-    const contacts = await loadContacts();
-    await mybc.addTx(lastTx, contacts);
-    await updateMyBlockchain(mybc);
+    mybc.addTx(lastTx);
+    saveBlockchain(mybc);
     updatePage();
     return true;
   }
-}
-
-async function updateMyBlockchain(blockchain) {
-  const oldBC = await loadBlockchain();
-  if (! toHexString(blockchain).endsWith(toHexString(oldBC))) {
-    throw "Invalid new Blockchain";
-  }
-  return saveBlockchain(blockchain);
 }
 
 function setBindings() {
@@ -317,8 +304,8 @@ function showModalAccountValidation(block) {
     $("#accountValidationButton").show();
     $("#accountValidationButton").on("click", () => {
       $("#accountValidationModal").modal("hide");
-      askPwdAndLoadPrivateKey(async (keypair) => {
-        const bc = await validateAccount(block, keypair);
+      askPwdAndLoadPrivateKey((privateKey) => {
+        const bc = Blockchain.validateAccount(block, privateKey);
         sendBlockchain("test@example.com", MSG.VALIDATION_ACCEPT, bc);
         $("#accountValidationButton").unbind("click");
         $("#accountValidationModal").modal("hide");
@@ -397,9 +384,9 @@ async function showPaymentModal() {
     $("#paymentValidationButton").unbind("click");
     $("#paymentModal").modal("hide");
     // 1. Create TX. 2. Add it to BC. 3. Save BC.
-    askPwdAndLoadPrivateKey(async (keypair) => {
-      await bc.addTx(await bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts);
-      await updateMyBlockchain(bc);
+    askPwdAndLoadPrivateKey((privateKey) => {
+      bc.addTx(bc.createPaymentTx(privateKey, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts);
+      saveBlockchain(bc);
       updatePage();
       const target = contacts.find(c => c.key === $("#pay-modal-target").val());
       if (target.key !== me.key) {
@@ -413,13 +400,12 @@ async function showPaymentModal() {
 function createDailyGuzis() {
   askPwdAndLoadPrivateKey(async (keypair) => {
     let bc = await loadBlockchain();
-    const contacts = await loadContacts();
-    const tx = await bc.createDailyGuzisTx(keypair);
+    const tx = bc.createDailyGuzisTx(keypair);
     if (tx === null) { 
       return;
     }
-    await bc.addTx(tx, contacts);
-    await updateMyBlockchain(bc);
+    bc.addTx(tx);
+    saveBlockchain(bc);
     updatePage();
   });
 }

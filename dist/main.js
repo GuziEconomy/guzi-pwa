@@ -44,6 +44,10 @@ class Blockchain {
     return secp.utils.randomPrivateKey()
   }
 
+  static publicFromPrivate (privateKey) {
+    return secp.getPublicKey(privateKey, true)
+  }
+
   constructor (blocks = []) {
     if (blocks === null) {
       blocks = []
@@ -237,7 +241,7 @@ class Blockchain {
    * Add given transaction to the Blockchain
    * and update Blockchain data depending on it
    */
-  addTx (tx, contacts) {
+  addTx (tx) {
     if (this.bks[0].s !== undefined) {
       this.newBlock()
     }
@@ -245,11 +249,11 @@ class Blockchain {
       this.bks[0].g = Object.assign(this.bks[0].g, tx.gp)
     }
     if (tx.t === Blockchain.TXTYPE.PAYMENT) {
-      const me = contacts.find(c => c.id === 0)
-      if (tx.s === me.key) {
+      const myPrivateKey = this.bks[this.bks.length-1].s
+      if (tx.s === myPrivateKey) {
         this.bks[0].g = this.removeGuzisFromAvailable(tx.gp)
       }
-      if (tx.tu === me.key) {
+      if (tx.tu === myPrivateKey) {
         let toadd = 0
         Object.keys(tx.gp).forEach(key => {
           toadd += tx.gp[key].length
@@ -10902,20 +10906,15 @@ async function createAccountFromModal() {
   // Create the first block of the blockchain : the Birthday Block
   let birthblock = guzi_money__WEBPACK_IMPORTED_MODULE_0___default().makeBirthBlock(birthdate, privateKey);
   cypherAndSavePrivateKey(privateKey, pwd);
-  await updateMyBlockchain([birthblock]);
-  await addContact(name, "-", secp.getPublicKey(privateKey, true), 0);
+  saveBlockchain([birthblock]);
+  await addContact(name, "-", guzi_money__WEBPACK_IMPORTED_MODULE_0___default().publicFromPrivate(privateKey), 0);
   updatePage();
   updateContacts();
   $("#newAccountModal").modal("hide");
 }
 
 function saveBlockchain(bc) {
-  const cleanBc = [];
-  for (let i=0; i<bc.length; i++) {
-    cleanBc[i] = bc[i];
-  }
-  const binBc = msgpack_lite__WEBPACK_IMPORTED_MODULE_2__.encode(cleanBc);
-  return localforage__WEBPACK_IMPORTED_MODULE_1___default().setItem('guzi-blockchain', binBc).then(() => {
+  return localforage__WEBPACK_IMPORTED_MODULE_1___default().setItem('guzi-blockchain', bc.asBinary).then(() => {
     console.log(`Blockchain successfully saved`);
   }).catch(function(err) {
     console.error(`Error while saving Blockchain`);
@@ -10966,12 +10965,10 @@ function askPwdAndLoadPrivateKey(callback) {
       showModalError("Mot de passe incorect.");
       return;
     }
-    let keypair = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    const ec = new elliptic.ec('secp256k1');
-    keypair = ec.keyFromPrivate(keypair.priv);
+    const privateKey = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
     $("#pwdModal").modal("hide");
     $("#pwdValidation").unbind("click");
-    callback(keypair);
+    callback(privateKey);
   });
   $("#pwdModal").modal("show");
 }
@@ -11022,10 +11019,13 @@ async function updatePage() {
   const me = await loadMe();
   $("#navbarUserName").html(me.name);
   if (blockchain.isEmpty()) {
+    console.log('Empty');
     $("#landing-first-visit").show();
   } else if (blockchain.isWaitingValidation()) {
+    console.log('waiting');
     $("#landing-created-account").show();
   } else if (blockchain.isValidated()) {
+    console.log('validated');
     $("#landing-validated-account").show();
     const level = blockchain.getLevel();
 
@@ -11078,7 +11078,7 @@ async function importData(data, modal) {
     if (modal) { modal.modal("hide"); }
     try {
       const blockchain = jsondata.bc;
-      await updateMyBlockchain(blockchain);
+      saveBlockchain(blockchain);
       updatePage();
     } catch (error) {
       showModalError("La blockchain donnée n'est pas valide");
@@ -11096,20 +11096,11 @@ async function importData(data, modal) {
     if (modal) { modal.modal("hide"); }
     const lastTx = receivedBC[0].tx[0];
     const mybc = await loadBlockchain();
-    const contacts = await loadContacts();
-    await mybc.addTx(lastTx, contacts);
-    await updateMyBlockchain(mybc);
+    mybc.addTx(lastTx);
+    saveBlockchain(mybc);
     updatePage();
     return true;
   }
-}
-
-async function updateMyBlockchain(blockchain) {
-  const oldBC = await loadBlockchain();
-  if (! toHexString(blockchain).endsWith(toHexString(oldBC))) {
-    throw "Invalid new Blockchain";
-  }
-  return saveBlockchain(blockchain);
 }
 
 function setBindings() {
@@ -11194,8 +11185,8 @@ function showModalAccountValidation(block) {
     $("#accountValidationButton").show();
     $("#accountValidationButton").on("click", () => {
       $("#accountValidationModal").modal("hide");
-      askPwdAndLoadPrivateKey(async (keypair) => {
-        const bc = await validateAccount(block, keypair);
+      askPwdAndLoadPrivateKey((privateKey) => {
+        const bc = guzi_money__WEBPACK_IMPORTED_MODULE_0___default().validateAccount(block, privateKey);
         sendBlockchain("test@example.com", MSG.VALIDATION_ACCEPT, bc);
         $("#accountValidationButton").unbind("click");
         $("#accountValidationModal").modal("hide");
@@ -11274,9 +11265,9 @@ async function showPaymentModal() {
     $("#paymentValidationButton").unbind("click");
     $("#paymentModal").modal("hide");
     // 1. Create TX. 2. Add it to BC. 3. Save BC.
-    askPwdAndLoadPrivateKey(async (keypair) => {
-      await bc.addTx(await bc.createPaymentTx(keypair, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts);
-      await updateMyBlockchain(bc);
+    askPwdAndLoadPrivateKey((privateKey) => {
+      bc.addTx(bc.createPaymentTx(privateKey, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts);
+      saveBlockchain(bc);
       updatePage();
       const target = contacts.find(c => c.key === $("#pay-modal-target").val());
       if (target.key !== me.key) {
@@ -11290,13 +11281,12 @@ async function showPaymentModal() {
 function createDailyGuzis() {
   askPwdAndLoadPrivateKey(async (keypair) => {
     let bc = await loadBlockchain();
-    const contacts = await loadContacts();
-    const tx = await bc.createDailyGuzisTx(keypair);
+    const tx = bc.createDailyGuzisTx(keypair);
     if (tx === null) { 
       return;
     }
-    await bc.addTx(tx, contacts);
-    await updateMyBlockchain(bc);
+    bc.addTx(tx);
+    saveBlockchain(bc);
     updatePage();
   });
 }
