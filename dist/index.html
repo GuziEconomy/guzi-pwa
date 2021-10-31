@@ -23,6 +23,7 @@
         <link href="bootstrap.min.css" rel="stylesheet" />
         <link href="guzi.css" rel="stylesheet" />
         <link href="vanillatoasts.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <script src="jquery.min.js"></script>
         <script src="bootstrap.bundle.min.js"></script>
 
@@ -411,30 +412,6 @@
             </div>
         </div>
 
-        <!-- Modal for any error -->
-        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="newContactModalLabel"> Erreur</h5>
-                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <div id="modal-error-content" class="alert alert-danger" role="alert">
-                                An error occured
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Fermer</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Modal for payment -->
         <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -464,6 +441,19 @@
                             <button id="paymentValidationButton" type="submit" class="btn btn-primary" data-bs-dismiss="modal"> Envoyer Paiement</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="congratulationModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="card">
+                    <div class="text-right cross"> <i class="fa fa-times"></i> </div>
+                    <div class="card-body text-center"> <img src="images/trophy.png">
+                        <h4>FÉLICITATIONS !</h4>
+                        <p id="congratulation-text">Vous venez d'atteindre le niveau 1</p>
+                        <button class="btn btn-out btn-square continue">SUPER !</button>
+                    </div>
                 </div>
             </div>
         </div>

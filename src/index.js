@@ -87,13 +87,11 @@ function askPwdAndLoadPrivateKey(callback) {
   $("#pwdValidation").on("click", async () => {
     const pwd = $("#pwdPrompt").val()
     const cipherkey  = await localforage.getItem('guzi-cipherkey')
-    console.log(cipherkey)
     const bytes  = AES.decrypt(cipherkey, pwd)
     if (bytes.sigBytes === 0) {
       alert('Erreur', 'Mot de passe incorect.', 'error')
       return
     }
-    console.log(bytes)
     const privateKey = bytes.toString(enc.Utf8)
     $("#pwdModal").modal("hide")
     $("#pwdValidation").unbind("click")
@@ -191,7 +189,6 @@ async function addContact(name, email, key, index=-1) {
 
 async function importData(data, modal) {
   const jsondata = JSON.parse(data)
-  console.log(jsondata)
   if (jsondata === undefined) {
     alert('Erreur', 'Les informations données sont invalides.', 'error')
     return
@@ -217,7 +214,10 @@ async function importData(data, modal) {
     }
     const mybc = await loadBlockchain()
     mybc.addTx(blockchain.getLastTx())
-    saveBlockchain(mybc)
+    await saveBlockchain(mybc)
+    if (mybc.hasLevelUpOnLastTx()) {
+      showCongratulationModal(mybc.getLevel())
+    }
     updatePage(mybc)
   }
 }
@@ -379,10 +379,13 @@ async function showPaymentModal() {
     $("#paymentValidationButton").unbind("click")
     $("#paymentModal").modal("hide")
     // 1. Create TX. 2. Add it to BC. 3. Save BC.
-    askPwdAndLoadPrivateKey((privateKey) => {
+    askPwdAndLoadPrivateKey(async (privateKey) => {
       bc.addTx(bc.createPaymentTx(privateKey, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts)
-      saveBlockchain(bc)
+      await saveBlockchain(bc)
       updatePage(bc)
+      if (bc.hasLevelUpOnLastTx()) {
+        showCongratulationModal(bc.getLevel())
+      }
       const target = contacts.find(c => c.key === $("#pay-modal-target").val())
       if (target.key !== me.key) {
         sendBlockchain(target.email, Blockchain.MSG.PAYMENT, bc)
@@ -390,6 +393,11 @@ async function showPaymentModal() {
     })
   })
   $("#paymentModal").modal("show")
+}
+
+function showCongratulationModal (newLvl) {
+  $('#congratulation-text').html(`Tu as atteint le niveau ${newLvl}. Tu créés maintenant ${newLvl} Guzis par jour !`)
+  $('#congratulationModal').modal('show')
 }
 
 function createDailyGuzis() {

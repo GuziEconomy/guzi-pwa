@@ -7,7 +7,6 @@
 const { sha256 } = __webpack_require__(2)
 const { Base64 } = __webpack_require__(8)
 const secp = __webpack_require__(9)
-const { toHex } = __webpack_require__(7)
 const msgpack = __webpack_require__(13)
 
 class Blockchain {
@@ -42,7 +41,7 @@ class Blockchain {
   }
 
   static randomPrivateKey () {
-    return toHex(secp.utils.randomPrivateKey())
+    return secp.utils.randomPrivateKey()
   }
 
   static publicFromPrivate (privateKey) {
@@ -85,6 +84,9 @@ class Blockchain {
    * Return the lastly added Transaction
    */
   getLastTx () {
+    if (this.getHistory().length === 0) {
+      return null
+    }
     return this.bks[0].tx[0]
   }
 
@@ -172,7 +174,7 @@ class Blockchain {
    */
   createDailyGuzisTx (key, d = null) {
     if (this.hasCreatedGuzisToday()) {
-      throw new Error('Guzis already created today')
+      // throw new Error('Guzis already created today')
     }
     d = d || new Date().toISOString().slice(0, 10)
     const amount = this.getLevel()
@@ -313,6 +315,20 @@ class Blockchain {
   }
 
   /**
+   * Return true if the last Transaction added made the Blockchain
+   * level up
+   */
+  hasLevelUpOnLastTx () {
+    if (this.getLastTx() === null) {
+      return null
+    }
+    if (this.getLastTx().t != Blockchain.TXTYPE.PAYMENT) {
+      return false
+    }
+    return Math.floor(Math.cbrt(this.bks[0].t - this.getLastTx().a)) + 1 < this.getLevel()
+  }
+
+  /**
    * Return the blocks of the Blockchain as an Uint8Array
    */
   asBinary () {
@@ -449,7 +465,7 @@ class Blockchain {
     this.bks.forEach(block => {
       if (block.tx) {
         block.tx.forEach(tx => {
-          result.append(tx)
+          result.push(tx)
         })
       }
     })
@@ -15129,13 +15145,11 @@ function askPwdAndLoadPrivateKey(callback) {
   $("#pwdValidation").on("click", async () => {
     const pwd = $("#pwdPrompt").val()
     const cipherkey  = await localforage__WEBPACK_IMPORTED_MODULE_1___default().getItem('guzi-cipherkey')
-    console.log(cipherkey)
     const bytes  = crypto_js__WEBPACK_IMPORTED_MODULE_2__.AES.decrypt(cipherkey, pwd)
     if (bytes.sigBytes === 0) {
       alert('Erreur', 'Mot de passe incorect.', 'error')
       return
     }
-    console.log(bytes)
     const privateKey = bytes.toString(crypto_js__WEBPACK_IMPORTED_MODULE_2__.enc.Utf8)
     $("#pwdModal").modal("hide")
     $("#pwdValidation").unbind("click")
@@ -15233,7 +15247,6 @@ async function addContact(name, email, key, index=-1) {
 
 async function importData(data, modal) {
   const jsondata = JSON.parse(data)
-  console.log(jsondata)
   if (jsondata === undefined) {
     alert('Erreur', 'Les informations données sont invalides.', 'error')
     return
@@ -15259,7 +15272,10 @@ async function importData(data, modal) {
     }
     const mybc = await loadBlockchain()
     mybc.addTx(blockchain.getLastTx())
-    saveBlockchain(mybc)
+    await saveBlockchain(mybc)
+    if (mybc.hasLevelUpOnLastTx()) {
+      showCongratulationModal(mybc.getLevel())
+    }
     updatePage(mybc)
   }
 }
@@ -15421,10 +15437,13 @@ async function showPaymentModal() {
     $("#paymentValidationButton").unbind("click")
     $("#paymentModal").modal("hide")
     // 1. Create TX. 2. Add it to BC. 3. Save BC.
-    askPwdAndLoadPrivateKey((privateKey) => {
+    askPwdAndLoadPrivateKey(async (privateKey) => {
       bc.addTx(bc.createPaymentTx(privateKey, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts)
-      saveBlockchain(bc)
+      await saveBlockchain(bc)
       updatePage(bc)
+      if (bc.hasLevelUpOnLastTx()) {
+        showCongratulationModal(bc.getLevel())
+      }
       const target = contacts.find(c => c.key === $("#pay-modal-target").val())
       if (target.key !== me.key) {
         sendBlockchain(target.email, (guzi_money__WEBPACK_IMPORTED_MODULE_0___default().MSG.PAYMENT), bc)
@@ -15432,6 +15451,11 @@ async function showPaymentModal() {
     })
   })
   $("#paymentModal").modal("show")
+}
+
+function showCongratulationModal (newLvl) {
+  $('#congratulation-text').html(`Tu as atteint le niveau ${newLvl}. Tu créés maintenant ${newLvl} Guzis par jour !`)
+  $('#congratulationModal').modal('show')
 }
 
 function createDailyGuzis() {
