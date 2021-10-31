@@ -344,8 +344,8 @@ async function showHistoryModal() {
         if (tx.t === Blockchain.TXTYPE.PAYMENT) { type = "Paiement" }
         html += `
                 <tr>
-                    <td>${source ? source.name : "??"}</td>
-                    <td>${target ? target.name : "??"}</td>
+                    <td>${source ? source.name : (tx.s ? "??" : "-")}</td>
+                    <td>${target ? target.name : (tx.tu ? "??" : "-")}</td>
                     <td>${tx.a}</td>
                     <td>${type}</td>
                     <td>${tx.d}</td>

@@ -57,3 +57,5 @@ Then open 127.0.0.1/tests.html
 21. [ ] Reject payment => send refusal back
 22. [X] Bug in hasCreatedGuzisToday that always return false
 23. [X] Focus in form when import clicked
+24. [X] Extract Guzi job into a library
+25. [ ] Add nice events "New level" or "error"

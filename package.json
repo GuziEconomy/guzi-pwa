@@ -26,7 +26,8 @@
     "crypto-js": "^4.1.1",
     "guzi-money": "^0.1.5",
     "localforage": "^1.10.0",
-    "msgpack-lite": "^0.1.26"
+    "msgpack-lite": "^0.1.26",
+    "vanillatoasts": "^1.4.0"
   },
   "devDependencies": {
     "webpack": "^5.60.0",
