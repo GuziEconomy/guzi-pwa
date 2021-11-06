@@ -10,26 +10,26 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 async function createAccountFromModal() {
-  let name = document.getElementById("new-account-modal-name").value
-  let birthdate = document.getElementById("new-account-modal-birthdate").value
+  const name = $('#new-account-modal-name').val()
+  let birthdate = $('#new-account-modal-birthdate').val()
   // DD/MM/YYYY to YYYY-MM-DD
-  birthdate = birthdate.slice(6,10) + "-" + birthdate.slice(3,5) + "-" + birthdate.slice(0,2)
-  const pwd = document.getElementById("new-account-modal-password").value
-  const pwd_conf = document.getElementById("new-account-modal-password-confirmation").value
+  birthdate = birthdate.slice(6,10) + '-' + birthdate.slice(3,5) + '-' + birthdate.slice(0,2)
+  const pwd = $('#new-account-modal-password').val()
+  const pwd_conf = $('#new-account-modal-password-confirmation').val()
   if (pwd !== pwd_conf) {
-    document.getElementById("pwd-error").className += "visible"
+    $('#pwd-error').addClass("visible")
     return
   }
   const privateKey = Blockchain.randomPrivateKey()
 
   // Create the first block of the blockchain : the Birthday Block
-  let birthblock = Blockchain.makeBirthBlock(birthdate, privateKey)
-  cypherAndSavePrivateKey(privateKey, pwd)
+  const birthblock = Blockchain.makeBirthBlock(birthdate, privateKey)
+  await cypherAndSavePrivateKey(privateKey, pwd)
   await saveBlockchain(new Blockchain([birthblock]))
-  await addContact(name, "-", Blockchain.publicFromPrivate(privateKey), 0)
+  await addContact(name, '-', Blockchain.publicFromPrivate(privateKey), 0)
   updatePage()
   updateContacts()
-  $("#newAccountModal").modal("hide")
+  $('#newAccountModal').modal('hide')
 }
 
 function saveBlockchain(bc) {
@@ -73,26 +73,32 @@ async function loadMe() {
   return contacts.find(c => c.id === 0)
 }
 
-function cypherAndSavePrivateKey(privateKey, pwd) {
-  const cipherkey = AES.encrypt(privateKey, pwd).toString()
+async function cypherAndSavePrivateKey(privateKey, pwd) {
+  const cipherkey = await Blockchain.aesEncrypt(privateKey, pwd)
 
-  localforage.setItem('guzi-cipherkey', cipherkey).then(() => {
-    alert('Enregistrement', 'Clé privée sauvegardée avec succès.', 'success')
-  }).catch(function(err) {
+  try {
+    localforage.setItem('guzi-cipherkey', cipherkey)
+  } catch (error) {
     alert('Erreur', 'La clé privée n\'a pas pu être sauvegardée.', 'error')
-  })
+    console.error(error)
+    return
+  } 
+  alert('Enregistrement', 'Clé privée sauvegardée avec succès.', 'success')
 }
 
 function askPwdAndLoadPrivateKey(callback) {
   $("#pwdValidation").on("click", async () => {
     const pwd = $("#pwdPrompt").val()
-    const cipherkey  = await localforage.getItem('guzi-cipherkey')
-    const bytes  = AES.decrypt(cipherkey, pwd)
-    if (bytes.sigBytes === 0) {
-      alert('Erreur', 'Mot de passe incorect.', 'error')
+    const encrypted  = await localforage.getItem('guzi-cipherkey')
+    let privateKey
+    try {
+      privateKey  = await Blockchain.aesDecrypt(encrypted, pwd)
+    } catch (error) {
+      $("#pwdModal").modal("hide")
+      $("#pwdValidation").unbind("click")
+      alert('Erreur', 'Mot de passe invalide', 'error')
       return
     }
-    const privateKey = bytes.toString(enc.Utf8)
     $("#pwdModal").modal("hide")
     $("#pwdValidation").unbind("click")
     callback(privateKey)
@@ -114,7 +120,6 @@ async function sendBlockchain(target, type, bc=-1) {
     }
     showExportModal(JSON.stringify(msg),target)
   }
-
 }
 
 async function updateContacts() {
@@ -126,14 +131,14 @@ async function updateContacts() {
             <tr>
                 <td>${me.name} (moi)</td>
                 <td>${me.email}</td>
-                <td>${me.key.substring(0, 10)}...</td>
+                <td></td>
             </tr>`
   contacts.filter(c=>c.id>0).sort((a,b)=>a.name>b.name).forEach((contact) => {
     html += `
             <tr>
                 <td>${contact.name}</td>
                 <td>${contact.email}</td>
-                <td class="text-truncate">${contact.key.substring(0, 10)}...</td>
+                <td></td>
             </tr>`
   })
   document.getElementById("contact-list").innerHTML = html
@@ -387,7 +392,7 @@ async function showPaymentModal() {
         showCongratulationModal(bc.getLevel())
       }
       const target = contacts.find(c => c.key === $("#pay-modal-target").val())
-      if (target.key !== me.key) {
+      if (target && target.key !== me.key) {
         sendBlockchain(target.email, Blockchain.MSG.PAYMENT, bc)
       }
     })
