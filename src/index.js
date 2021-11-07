@@ -1,6 +1,5 @@
 import Blockchain from 'guzi-money'
 import localforage from 'localforage'
-import { enc, AES } from 'crypto-js'
 import VanillaToasts from 'vanillatoasts'
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -30,6 +29,16 @@ async function createAccountFromModal() {
   updatePage()
   updateContacts()
   $('#newAccountModal').modal('hide')
+}
+
+async function autoValidateAccount () {
+  let bc = await loadBlockchain()
+  askPwdAndLoadPrivateKey((privateKey) => {
+    const block = bc.blocks[0]
+    bc = Blockchain.validateAccount(block, privateKey)
+    saveBlockchain(bc)
+    updatePage(bc)
+  })
 }
 
 function saveBlockchain(bc) {
@@ -239,6 +248,7 @@ function setBindings() {
   $("#createMyGuzisButton").on("click", createDailyGuzis)
   $("#newContactValidationButton").on("click", addContactFromModal)
   $("#newAccountValidationButton").on("click", createAccountFromModal)
+  $("#autoValidateAccountButton").on("click", autoValidateAccount)
   $("#paymentButton").on("click", showPaymentModal)
   $("#be-referent-button").on("click", showModalImport)
   $("#historyButton").on("click", showHistoryModal)
