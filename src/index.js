@@ -345,24 +345,20 @@ async function showHistoryModal() {
   const contacts = await loadContacts()
   const bc = await loadBlockchain()
   let html = ""
-  bc.blocks.forEach(block => {
-    if (block.tx) {
-      block.tx.forEach(tx => {
-        const source = contacts.find(c => c.key === tx.s)
-        const target = contacts.find(c => c.key === tx.tu)
-        let type = ""
-        if (tx.t === Blockchain.TXTYPE.GUZI_CREATE) { type = "Création" }
-        if (tx.t === Blockchain.TXTYPE.PAYMENT) { type = "Paiement" }
-        html += `
-                <tr>
-                    <td>${source ? source.name : (tx.s ? "??" : "-")}</td>
-                    <td>${target ? target.name : (tx.tu ? "??" : "-")}</td>
-                    <td>${tx.a}</td>
-                    <td>${type}</td>
-                    <td>${tx.d}</td>
-                </tr>`
-      })
-    }
+  bc.getHistory().forEach(tx => {
+    const source = contacts.find(c => JSON.stringify(c.key) === JSON.stringify(tx.s))
+    const target = contacts.find(c => JSON.stringify(c.key) === JSON.stringify(tx.tu))
+    let type = ""
+    if (tx.t === Blockchain.TXTYPE.GUZI_CREATE) { type = "Création" }
+    if (tx.t === Blockchain.TXTYPE.PAYMENT) { type = "Paiement" }
+    html += `
+      <tr>
+          <td>${source ? source.name : (tx.s ? "??" : "-")}</td>
+          <td>${target ? target.name : (tx.tu ? "??" : "-")}</td>
+          <td>${tx.a}</td>
+          <td>${type}</td>
+          <td>${tx.d}</td>
+      </tr>`
   })
   document.getElementById("history-list").innerHTML = html
   $("#historyModal").modal("show")
@@ -374,7 +370,7 @@ async function showPaymentModal() {
   const me = contacts.find(c => c.id === 0)
   $("#pay-modal-target").html("")
   contacts.forEach(c => {
-    $('#pay-modal-target').append(new Option(c.name, c.key))
+    $('#pay-modal-target').append(new Option(c.name, c.id))
   })
   $("#pay-modal-amount").attr("min", 0)
   $("#pay-modal-amount").attr("max", bc.getAvailableGuziAmount())
@@ -385,13 +381,13 @@ async function showPaymentModal() {
     $("#paymentModal").modal("hide")
     // 1. Create TX. 2. Add it to BC. 3. Save BC.
     askPwdAndLoadPrivateKey(async (privateKey) => {
-      bc.addTx(bc.createPaymentTx(privateKey, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts)
+      const target = contacts.find(c => c.id == $("#pay-modal-target").val())
+      bc.addTx(bc.createPaymentTx(privateKey, target.key, $("#pay-modal-amount").val()), contacts)
       await saveBlockchain(bc)
       updatePage(bc)
       if (bc.hasLevelUpOnLastTx()) {
         showCongratulationModal(bc.getLevel())
       }
-      const target = contacts.find(c => c.key === $("#pay-modal-target").val())
       if (target && target.key !== me.key) {
         sendBlockchain(target.email, Blockchain.MSG.PAYMENT, bc)
       }

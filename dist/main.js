@@ -7,7 +7,7 @@
 const { Base64 } = __webpack_require__(2)
 const { sha256 } = __webpack_require__(3)
 const { scryptSync } = __webpack_require__(9);
-const { utf8ToBytes } = __webpack_require__(8);
+const { utf8ToBytes, toHex } = __webpack_require__(8);
 const secp = __webpack_require__(13)
 const { encrypt, decrypt } = __webpack_require__(16);
 const { getRandomBytesSync } = __webpack_require__(17);
@@ -287,10 +287,10 @@ class Blockchain {
     }
     if (tx.t === Blockchain.TXTYPE.PAYMENT) {
       const myPrivateKey = this.bks[this.bks.length-1].s
-      if (tx.s === myPrivateKey) {
+      if (toHex(tx.s) === toHex(myPrivateKey)) {
         this.bks[0].g = this.removeGuzisFromAvailable(tx.gp)
       }
-      if (tx.tu === myPrivateKey) {
+      if (toHex(tx.tu) === toHex(myPrivateKey)) {
         let toadd = 0
         Object.keys(tx.gp).forEach(key => {
           toadd += tx.gp[key].length
@@ -418,7 +418,6 @@ class Blockchain {
   static signblock (block, privateKey) {
     const hash = Blockchain.hashblock(block)
     const bytes = secp.signSync(hash, privateKey)
-    // console.log(Blockchain.toHexString(bytes))
     block.h = bytes
     return block
   }
@@ -462,15 +461,30 @@ class Blockchain {
   }
 
   /**
-   * Return true if given Block is a valid Initialisation one
+   * Return true if given Block is a valid Birth one
+   */
+  static isValidBirthBlock (block) {
+    const signature = block.h
+    const messageHash = Blockchain.hashblock(block)
+    const publicKey = block.s
+
+    return block.ph === Blockchain.REF_HASH &&
+      block.v === Blockchain.VERSION &&
+      JSON.stringify(block.g) === JSON.stringify({}) &&
+      block.b === 0 &&
+      block.t === 0 &&
+      secp.verify(signature, messageHash, publicKey)
+  }
+
+  /**
+   * Return true if given Block is a valid Birth one
    */
   static isValidInitializationBlock (block) {
     const signature = block.h
     const messageHash = Blockchain.hashblock(block)
     const publicKey = block.s
 
-    return block.ph === Blockchain.REF_HASH &&
-      block.v === 1 &&
+    return block.v === Blockchain.VERSION &&
       JSON.stringify(block.g) === JSON.stringify({}) &&
       block.b === 0 &&
       block.t === 0 &&
@@ -15872,24 +15886,20 @@ async function showHistoryModal() {
   const contacts = await loadContacts()
   const bc = await loadBlockchain()
   let html = ""
-  bc.blocks.forEach(block => {
-    if (block.tx) {
-      block.tx.forEach(tx => {
-        const source = contacts.find(c => c.key === tx.s)
-        const target = contacts.find(c => c.key === tx.tu)
-        let type = ""
-        if (tx.t === (guzi_money__WEBPACK_IMPORTED_MODULE_0___default().TXTYPE.GUZI_CREATE)) { type = "Création" }
-        if (tx.t === (guzi_money__WEBPACK_IMPORTED_MODULE_0___default().TXTYPE.PAYMENT)) { type = "Paiement" }
-        html += `
-                <tr>
-                    <td>${source ? source.name : (tx.s ? "??" : "-")}</td>
-                    <td>${target ? target.name : (tx.tu ? "??" : "-")}</td>
-                    <td>${tx.a}</td>
-                    <td>${type}</td>
-                    <td>${tx.d}</td>
-                </tr>`
-      })
-    }
+  bc.getHistory().forEach(tx => {
+    const source = contacts.find(c => JSON.stringify(c.key) === JSON.stringify(tx.s))
+    const target = contacts.find(c => JSON.stringify(c.key) === JSON.stringify(tx.tu))
+    let type = ""
+    if (tx.t === (guzi_money__WEBPACK_IMPORTED_MODULE_0___default().TXTYPE.GUZI_CREATE)) { type = "Création" }
+    if (tx.t === (guzi_money__WEBPACK_IMPORTED_MODULE_0___default().TXTYPE.PAYMENT)) { type = "Paiement" }
+    html += `
+      <tr>
+          <td>${source ? source.name : (tx.s ? "??" : "-")}</td>
+          <td>${target ? target.name : (tx.tu ? "??" : "-")}</td>
+          <td>${tx.a}</td>
+          <td>${type}</td>
+          <td>${tx.d}</td>
+      </tr>`
   })
   document.getElementById("history-list").innerHTML = html
   $("#historyModal").modal("show")
@@ -15901,7 +15911,7 @@ async function showPaymentModal() {
   const me = contacts.find(c => c.id === 0)
   $("#pay-modal-target").html("")
   contacts.forEach(c => {
-    $('#pay-modal-target').append(new Option(c.name, c.key))
+    $('#pay-modal-target').append(new Option(c.name, c.id))
   })
   $("#pay-modal-amount").attr("min", 0)
   $("#pay-modal-amount").attr("max", bc.getAvailableGuziAmount())
@@ -15912,13 +15922,13 @@ async function showPaymentModal() {
     $("#paymentModal").modal("hide")
     // 1. Create TX. 2. Add it to BC. 3. Save BC.
     askPwdAndLoadPrivateKey(async (privateKey) => {
-      bc.addTx(bc.createPaymentTx(privateKey, $("#pay-modal-target").val(), $("#pay-modal-amount").val()), contacts)
+      const target = contacts.find(c => c.id == $("#pay-modal-target").val())
+      bc.addTx(bc.createPaymentTx(privateKey, target.key, $("#pay-modal-amount").val()), contacts)
       await saveBlockchain(bc)
       updatePage(bc)
       if (bc.hasLevelUpOnLastTx()) {
         showCongratulationModal(bc.getLevel())
       }
-      const target = contacts.find(c => c.key === $("#pay-modal-target").val())
       if (target && target.key !== me.key) {
         sendBlockchain(target.email, (guzi_money__WEBPACK_IMPORTED_MODULE_0___default().MSG.PAYMENT), bc)
       }

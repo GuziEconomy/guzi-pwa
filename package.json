@@ -24,7 +24,7 @@
   "homepage": "https://github.com/GuziEconomy/guzi-pwa#readme",
   "dependencies": {
     "crypto-js": "^4.1.1",
-    "guzi-money": "^0.1.8",
+    "guzi-money": "^0.1.9",
     "localforage": "^1.10.0",
     "msgpack-lite": "^0.1.26",
     "vanillatoasts": "^1.4.0"
